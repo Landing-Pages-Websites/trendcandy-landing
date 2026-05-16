@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+/* TrendCandy — Brand tokens
+ * Source: https://www.trendcandy.io (2026-05-15) — orange #FF6919 primary,
+ * sky #69C1E1 secondary, warm peach tints, Poppins headings.
+ */
+@theme {
+  /* Brand colors */
+  --color-primary: #ff6919;
+  --color-primary-hover: #e85a0d;
+  --color-primary-50: #fff2eb;
+  --color-primary-100: #ffe2d1;
+  --color-primary-200: #ffc4a3;
+  --color-primary-300: #ffa570;
+  --color-primary-400: #ff8a45;
+  --color-primary-500: #ff6919;
+  --color-primary-600: #e85a0d;
+  --color-primary-700: #b8470a;
+  --color-primary-800: #843208;
+
+  --color-accent: #69c1e1; /* sky */
+  --color-accent-hover: #4ba9cc;
+  --color-accent-100: #def0f8;
+  --color-accent-200: #b5dff0;
+  --color-accent-700: #2f7d99;
+
+  --color-ink: #111111;
+  --color-ink-muted: #555a64;
+  --color-ink-on-dark: rgba(255, 255, 255, 0.92);
+
+  --color-surface: #ffffff;
+  --color-surface-alt: #fff8f3;
+  --color-surface-warm: #ffeedb;
+  --color-surface-dark: #1a1a1a;
+  --color-surface-darker: #0d0d0d;
+  --color-line: #ecd9c7;
+  --color-line-warm: #f5e0c8;
+
+  /* Fonts */
+  --font-display: var(--font-poppins);
+  --font-body: var(--font-poppins);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  letter-spacing: -0.018em;
+  font-weight: 700;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Eyebrow */
+.eyebrow {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, transparent 100%);
+  border-radius: 2px;
+}
+.eyebrow-on-dark {
+  color: var(--color-primary-300);
+}
+.eyebrow-on-dark::before {
+  background: linear-gradient(90deg, var(--color-primary-300) 0%, transparent 100%);
+}
+
+/* Hero hand-drawn underline accent */
+.underline-brush {
+  background-image: linear-gradient(
+    180deg,
+    transparent 60%,
+    rgba(105, 193, 225, 0.5) 60%,
+    rgba(105, 193, 225, 0.5) 92%,
+    transparent 92%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  padding: 0 0.08em;
+}
+
+/* Hero candy-strip pattern (echoes trendcandy.io pattern strip) */
+.candy-strip {
+  background: repeating-linear-gradient(
+    135deg,
+    #ff6919 0 14px,
+    #69c1e1 14px 28px,
+    #ffd0a8 28px 42px,
+    #ffffff 42px 56px
+  );
+}
+
+/* Aurora-style soft glow behind hero (warm peach + sky) */
+.aurora-warm {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 40% at 18% 30%, rgba(255, 105, 25, 0.18), transparent 60%),
+    radial-gradient(40% 40% at 82% 22%, rgba(105, 193, 225, 0.28), transparent 60%),
+    radial-gradient(50% 50% at 50% 80%, rgba(255, 169, 135, 0.22), transparent 60%);
+  filter: blur(40px);
+  animation: aurora-shift 18s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes aurora-shift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(-3%, 2%, 0) scale(1.05); }
+  66% { transform: translate3d(3%, -2%, 0) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-warm { animation: none; }
+}
+
+/* Marquee — horizontally scrolling trust strip */
+.marquee {
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent 0, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 8%, black 92%, transparent 100%);
+}
+.marquee-track {
+  display: inline-flex;
+  gap: 3rem;
+  white-space: nowrap;
+  animation: marquee-scroll 38s linear infinite;
+  padding-right: 3rem;
+  align-items: center;
+}
+@keyframes marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* Button glow */
+.btn-glow:hover {
+  box-shadow: 0 0 0 3px rgba(255, 105, 25, 0.14),
+              0 12px 30px -10px rgba(255, 105, 25, 0.55);
+}
+
+/* Pulsing dot — "live" indicators */
+.dot-pulse {
+  position: relative;
+  display: inline-flex;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #34d399;
+}
+.dot-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #34d399;
+  animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  opacity: 0.6;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-pulse::after { animation: none; }
+}
+
+/* Reveal animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Calendly inline embed — make sure full month grid is visible without internal scroll */
+.calendly-inline-widget {
+  min-width: 320px;
+  height: 1100px;
+}
+@media (max-width: 768px) {
+  .calendly-inline-widget {
+    height: 1180px;
+  }
+}
