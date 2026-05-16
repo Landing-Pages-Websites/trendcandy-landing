@@ -49,6 +49,10 @@ export function FormCard({
   const { submit } = useMegaLeadForm();
   const formRef = useRef<HTMLFormElement>(null);
   const calendlyHostRef = useRef<HTMLDivElement>(null);
+  // Synchronous guard — React state updates are batched, so several clicks
+  // in the same tick all see submitting=false. This ref flips synchronously
+  // inside performSubmit() and gates duplicate sends (HARD RULE 6).
+  const inFlightRef = useRef(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -101,8 +105,9 @@ export function FormCard({
   }, [submitted, firstName, lastName, email]);
 
   async function performSubmit() {
-    if (submitting || submitted) return;
+    if (inFlightRef.current || submitted) return;
     if (!canSubmit) return;
+    inFlightRef.current = true;
     setError(null);
     setSubmitting(true);
     try {
