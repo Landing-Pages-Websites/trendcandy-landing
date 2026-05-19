@@ -31,14 +31,14 @@ export function TrustBarSection() {
           {loop.map((c, idx) => (
             <div
               key={`${c.name}-${idx}`}
-              className="flex items-center justify-center min-w-[140px] h-14 opacity-80 grayscale hover:grayscale-0 hover:opacity-100 transition"
+              className="flex items-center justify-center min-w-[200px] sm:min-w-[240px] h-20 sm:h-28 opacity-80 grayscale hover:grayscale-0 hover:opacity-100 transition"
             >
               <Image
                 src={c.src}
                 alt={c.name}
-                width={160}
-                height={56}
-                className="max-h-12 w-auto object-contain"
+                width={280}
+                height={112}
+                className="max-h-16 sm:max-h-24 w-auto object-contain"
               />
             </div>
           ))}
