@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Script from "next/script";
-import { useMegaLeadForm } from "@/hooks/useMegaLeadForm";
+import { useMegaLeadForm, EMAIL_PATTERN, isValidEmail } from "@/hooks/useMegaLeadForm";
 import { BRAND } from "@/lib/content";
 
 type Props = {
@@ -66,7 +66,7 @@ export function FormCard({
   const [error, setError] = useState<string | null>(null);
   const [calendlyReady, setCalendlyReady] = useState(false);
 
-  const emailValid = /@.+\..+/.test(email);
+  const emailValid = isValidEmail(email);
   const canSubmit =
     firstName.trim().length >= 1 &&
     lastName.trim().length >= 1 &&
@@ -303,7 +303,9 @@ export function FormCard({
             required
             placeholder="Work email"
             value={email}
+            pattern={EMAIL_PATTERN}
             onChange={(e) => setEmail(e.target.value)}
+            title="Enter a valid email address (e.g. you@company.com)"
             className={inputClass}
           />
         </div>

@@ -177,6 +177,25 @@ const initAttribution = (): Attribution => {
   return attribution;
 };
 
+// ---------------------------------------------------------------------------
+// EMAIL VALIDATION — RFC-5322-lite
+// ---------------------------------------------------------------------------
+// Pragmatic, fleet-standard email validator. Requires:
+//   - one or more local-part chars (letters, digits, ._%+-)
+//   - an @
+//   - one or more domain chars (letters, digits, .-)
+//   - a literal dot
+//   - a TLD of 2+ letters
+// Source: landing-page-forms skill, Hard Rule #4b (email validation).
+// HTML5 `pattern` attr applies its own ^…$ anchors and does NOT accept
+// inline `^`/`$` literals — so we expose two forms:
+//   EMAIL_PATTERN — un-anchored, for use in <input pattern={...}>
+//   EMAIL_REGEX   — anchored, for use in JS isValidEmail() checks
+export const EMAIL_PATTERN = "[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}";
+export const EMAIL_REGEX = new RegExp(`^${EMAIL_PATTERN}$`);
+export const isValidEmail = (value: unknown): boolean =>
+  typeof value === "string" && EMAIL_REGEX.test(value.trim());
+
 export interface UseMegaLeadFormOptions {
   sourceProvider?: string;
   customerId?: string;
@@ -213,6 +232,9 @@ export function useMegaLeadForm(
       }
       if (!formData.firstName || !formData.email) {
         throw new Error("firstName and email are required");
+      }
+      if (!isValidEmail(formData.email)) {
+        throw new Error("Enter a valid email address");
       }
 
       const attribution = initAttribution();
