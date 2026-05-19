@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "@/components/Reveal";
+import { TypewriterCycle } from "@/components/TypewriterCycle";
 import { BRAND, HERO_STATS } from "@/lib/content";
 
 /**
@@ -22,17 +23,26 @@ export function HeroSection() {
         <Reveal className="max-w-4xl mx-auto text-center space-y-7">
           <div className="inline-flex items-center gap-2 rounded-full bg-white border border-[var(--color-line)] px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--color-primary)]">
             <span className="dot-pulse" aria-hidden />
-            <span>Original B2B Survey Data · Done For You</span>
+            <span>Done-For-You B2B Survey Data</span>
           </div>
 
           <h1 className="text-[2.4rem] sm:text-5xl lg:text-[3.8rem] xl:text-[4.4rem] font-extrabold leading-[1.04] tracking-tight text-[var(--color-ink)]">
-            Make survey data that becomes your most valuable{" "}
-            <span className="underline-brush text-[var(--color-primary)]">content asset</span>{" "}
-            — and AI-search citation.
+            Make survey data that becomes your{" "}
+            <TypewriterCycle
+              phrases={[
+                "content asset",
+                "AI-search citation",
+                "PR magnet",
+                "sales narrative",
+                "category POV",
+              ]}
+              className="underline-brush text-[var(--color-primary)] whitespace-nowrap"
+            />
+            .
           </h1>
 
           <p className="text-lg sm:text-xl text-[var(--color-ink-muted)] max-w-3xl mx-auto leading-relaxed">
-            {BRAND.positioning}
+            We run the survey, find the headline stats, and turn them into the content your team publishes all year — and AI search engines cite.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 pt-2">

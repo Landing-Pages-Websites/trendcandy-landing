@@ -217,3 +217,19 @@ html {
     height: 1180px;
   }
 }
+
+/* Typewriter caret used by <TypewriterCycle> in the hero headline */
+.typewriter-caret {
+  display: inline-block;
+  margin-left: 2px;
+  font-weight: 400;
+  color: currentColor;
+  opacity: 1;
+  animation: typewriter-caret-blink 1s steps(2, start) infinite;
+}
+@keyframes typewriter-caret-blink {
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-caret { animation: none; opacity: 0; }
+}
