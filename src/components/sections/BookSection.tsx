@@ -1,13 +1,13 @@
 "use client";
 
-import { FormCard } from "@/components/FormCard";
+import { CalendlyEmbed } from "@/components/CalendlyEmbed";
 import { Reveal } from "@/components/Reveal";
-import { BRAND } from "@/lib/content";
 
 /**
- * Booking section — form is the gateway. On submit, the FormCard swaps in
- * the Calendly inline embed (prefilled with name + email). Per customer
- * directive 2026-05-14, every fill posts to Keystone — no on-page qualifying.
+ * Booking section — Calendly is the page's ONLY CTA (task 346346fc).
+ * The previous lead-form gateway was removed per the original LP directive
+ * ("no form — embed Justin's Calendly as the only CTA"). All page CTAs point
+ * to #book and land here on Justin's inline Calendly booker.
  */
 export function BookSection() {
   return (
@@ -21,25 +21,21 @@ export function BookSection() {
             Today&apos;s the day you create better content.
           </h2>
           <p className="text-lg text-[var(--color-ink-muted)] mt-5">
-            Tell us a bit about your brand and we&apos;ll come to the call with
-            2-3 survey concepts tailored to your category — plus the
-            headlines each one is built to produce. No brand ever became a
-            thought leader by pointing to someone else&apos;s thought leadership.
+            Grab a time below for your 30-minute Dream Headlines session with
+            Justin. We&apos;ll come to the call with 2-3 survey concepts
+            tailored to your category — plus the headlines each one is built to
+            produce. No brand ever became a thought leader by pointing to
+            someone else&apos;s thought leadership.
           </p>
           <p className="text-sm text-[var(--color-ink-muted)] mt-3">
-            Want to skip the form?{" "}
-            <a
-              href={BRAND.calendlyUrl}
-              className="text-[var(--color-primary)] font-semibold underline underline-offset-4 hover:text-[var(--color-primary-hover)]"
-            >
-              Go directly to Justin&apos;s calendar
-            </a>
-            .
+            30 minutes · No commitment · Free survey concepts
           </p>
         </Reveal>
 
         <Reveal delay={120}>
-          <FormCard variant="hero" idSuffix="book" />
+          <div className="bg-white/97 backdrop-blur rounded-3xl shadow-2xl shadow-black/15 border border-[var(--color-line)] p-4 sm:p-6 max-w-4xl mx-auto">
+            <CalendlyEmbed />
+          </div>
         </Reveal>
       </div>
     </section>
