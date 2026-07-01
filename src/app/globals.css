@@ -218,6 +218,22 @@ html {
   }
 }
 
+/* Typewriter zero-CLS slot: reservation phrases + live text share one grid
+   cell, so the headline width/line-count stays constant across the cycle. */
+.typewriter-slot {
+  display: inline-grid;
+  vertical-align: baseline;
+}
+.typewriter-slot > * {
+  grid-area: 1 / 1;         /* stack every layer in the same cell */
+  justify-self: start;      /* size each layer to its own text, not the cell */
+}
+.typewriter-slot > .typewriter-reserve {
+  visibility: hidden;       /* reserves width/height without painting */
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Typewriter caret used by <TypewriterCycle> in the hero headline */
 .typewriter-caret {
   display: inline-block;

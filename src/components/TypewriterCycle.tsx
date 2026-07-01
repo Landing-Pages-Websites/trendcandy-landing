@@ -9,8 +9,13 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
  *
  * Respects prefers-reduced-motion: renders the first phrase statically.
  *
- * Layout note: when the visible text is empty we render a non-breaking space
- * so the surrounding line height never collapses.
+ * Layout note (zero CLS): the animated text is NOT allowed to drive layout.
+ * We render an invisible reservation copy of every phrase stacked in a single
+ * `inline-grid` cell — the cell sizes itself to the WIDEST phrase (caret
+ * included) and never changes. The live, animating text is overlaid in that
+ * same cell, so the headline occupies a constant width / line count no matter
+ * which phrase is currently typed. When the visible text is empty we still
+ * render a non-breaking space so the live layer keeps its line box.
  */
 type Phase = "typing" | "holding" | "deleting" | "gap";
 
@@ -122,18 +127,36 @@ export function TypewriterCycle({
   const display = reduceMotion ? safePhrases[0] : text;
   const visible = display.length > 0 ? display : "\u00A0"; // nbsp preserves line height
 
+  const caret = !reduceMotion && (
+    <span className="typewriter-caret" aria-hidden>
+      |
+    </span>
+  );
+
   return (
     <span
-      className={className}
+      className="typewriter-slot"
       aria-label={safePhrases.join(", ")}
       aria-live="polite"
     >
-      {visible}
-      {!reduceMotion && (
-        <span className="typewriter-caret" aria-hidden>
-          |
+      {/*
+        Reservation layer: every phrase, invisible, each on its own line so the
+        grid cell sizes to the widest phrase + caret. Never animates, so the
+        reserved footprint is constant across the whole cycle. `aria-hidden`
+        keeps it out of the accessibility tree (the label above covers it).
+      */}
+      {safePhrases.map((phrase, i) => (
+        <span key={i} className={`${className} typewriter-reserve`} aria-hidden>
+          {phrase}
+          {caret}
         </span>
-      )}
+      ))}
+
+      {/* Live animating text, overlaid in the same grid cell. */}
+      <span className={className} aria-hidden>
+        {visible}
+        {caret}
+      </span>
     </span>
   );
 }
