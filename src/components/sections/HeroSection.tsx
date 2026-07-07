@@ -38,7 +38,6 @@ export function HeroSection() {
               ]}
               className="underline-brush text-[var(--color-primary)] whitespace-nowrap"
             />
-            .
           </h1>
 
           <p className="text-lg sm:text-xl text-[var(--color-ink-muted)] max-w-3xl mx-auto leading-relaxed">
