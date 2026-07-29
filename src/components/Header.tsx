@@ -36,9 +36,9 @@ export function Header() {
           <Image
             src="/images/trendcandy-logo.png"
             alt="TrendCandy"
-            width={160}
-            height={48}
-            className="h-12 sm:h-14 w-auto object-contain"
+            width={220}
+            height={66}
+            className="h-16 sm:h-20 w-auto object-contain"
             priority
           />
         </Link>

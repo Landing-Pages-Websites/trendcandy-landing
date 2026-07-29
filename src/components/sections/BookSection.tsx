@@ -11,7 +11,7 @@ import { Reveal } from "@/components/Reveal";
  */
 export function BookSection() {
   return (
-    <section id="book" className="relative bg-[var(--color-surface)] py-20 sm:py-24 scroll-mt-20">
+    <section className="relative bg-[var(--color-surface)] py-20 sm:py-24">
       <div className="aurora-warm pointer-events-none opacity-60" aria-hidden />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 z-10">
@@ -33,7 +33,7 @@ export function BookSection() {
         </Reveal>
 
         <Reveal delay={120}>
-          <div className="bg-white/97 backdrop-blur rounded-3xl shadow-2xl shadow-black/15 border border-[var(--color-line)] p-4 sm:p-6 max-w-4xl mx-auto">
+          <div id="book" className="bg-white/97 backdrop-blur rounded-3xl shadow-2xl shadow-black/15 border border-[var(--color-line)] p-4 sm:p-6 max-w-4xl mx-auto scroll-mt-28">
             <CalendlyEmbed />
           </div>
         </Reveal>
