@@ -62,6 +62,9 @@ h1, h2, h3, h4 {
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
+  /* Defensive clip against stray horizontal overflow. Use clip (not hidden)
+     so the fixed Header still sticks correctly. */
+  overflow-x: clip;
 }
 
 /* Eyebrow */

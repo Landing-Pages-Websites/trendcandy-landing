@@ -11,7 +11,7 @@ import { Reveal } from "@/components/Reveal";
  */
 export function BookSection() {
   return (
-    <section className="relative bg-[var(--color-surface)] py-20 sm:py-24">
+    <section className="relative overflow-hidden bg-[var(--color-surface)] py-20 sm:py-24">
       <div className="aurora-warm pointer-events-none opacity-60" aria-hidden />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 z-10">
