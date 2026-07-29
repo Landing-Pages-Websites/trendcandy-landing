@@ -27,7 +27,7 @@ export function Header() {
           : "bg-white/90 backdrop-blur"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3">
         <Link
           href="#hero"
           className="flex items-center gap-2 group"
@@ -36,9 +36,9 @@ export function Header() {
           <Image
             src="/images/trendcandy-logo.png"
             alt="TrendCandy"
-            width={220}
-            height={66}
-            className="h-16 sm:h-20 w-auto object-contain"
+            width={480}
+            height={144}
+            className="h-32 sm:h-40 w-auto object-contain"
             priority
           />
         </Link>
