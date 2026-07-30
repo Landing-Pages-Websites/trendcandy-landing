@@ -27,18 +27,18 @@ export function Header() {
           : "bg-white/90 backdrop-blur"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <Link
           href="#hero"
           className="flex items-center gap-2 group"
           aria-label={`${BRAND.name} home`}
         >
           <Image
-            src="/images/trendcandy-logo.png"
+            src="/images/trendcandy-logo-tight.png"
             alt="TrendCandy"
-            width={480}
-            height={144}
-            className="h-32 sm:h-40 w-auto object-contain"
+            width={896}
+            height={379}
+            className="h-14 sm:h-16 w-auto object-contain"
             priority
           />
         </Link>
