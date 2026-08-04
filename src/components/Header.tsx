@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/content";
 
@@ -28,10 +27,11 @@ export function Header() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-        <Link
-          href="#hero"
+        <a
+          href="https://www.trendcandy.io/"
+          rel="noopener"
+          aria-label="TrendCandy home page"
           className="flex items-center gap-2 group"
-          aria-label={`${BRAND.name} home`}
         >
           <Image
             src="/images/trendcandy-logo-tight.png"
@@ -41,7 +41,7 @@ export function Header() {
             className="h-14 sm:h-16 w-auto object-contain"
             priority
           />
-        </Link>
+        </a>
 
         <div className="flex items-center gap-2 sm:gap-3">
           <a
