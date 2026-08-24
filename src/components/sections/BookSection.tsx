@@ -1,13 +1,13 @@
 "use client";
 
-import { CalendlyEmbed } from "@/components/CalendlyEmbed";
+import { FormCard } from "@/components/FormCard";
 import { Reveal } from "@/components/Reveal";
 
 /**
- * Booking section — Calendly is the page's ONLY CTA (task 346346fc).
- * The previous lead-form gateway was removed per the original LP directive
- * ("no form — embed Justin's Calendly as the only CTA"). All page CTAs point
- * to #book and land here on Justin's inline Calendly booker.
+ * Booking section: the page's primary CTA target. Booking is a two-step flow:
+ * step one is the on-page lead form below; on a successful submission the
+ * visitor is redirected to Justin's Calendly to pick a time (step two). All
+ * page CTAs point to #book and land on this form.
  */
 export function BookSection() {
   return (
@@ -21,11 +21,12 @@ export function BookSection() {
             Today&apos;s the day you create better content.
           </h2>
           <p className="text-lg text-[var(--color-ink-muted)] mt-5">
-            Grab a time below for your 30-minute Dream Headlines session with
-            Justin. We&apos;ll come to the call with 2-3 survey concepts
-            tailored to your category — plus the headlines each one is built to
-            produce. No brand ever became a thought leader by pointing to
-            someone else&apos;s thought leadership.
+            Two quick steps. First, tell us where to reach you below. Then pick a
+            time for your 30-minute Dream Headlines session with Justin.
+            We&apos;ll come to the call with 2-3 survey concepts tailored to your
+            category, plus the headlines each one is built to produce. No brand
+            ever became a thought leader by pointing to someone else&apos;s
+            thought leadership.
           </p>
           <p className="text-sm text-[var(--color-ink-muted)] mt-3">
             30 minutes · No commitment · Free survey concepts
@@ -33,8 +34,8 @@ export function BookSection() {
         </Reveal>
 
         <Reveal delay={120}>
-          <div id="book" className="bg-white/97 backdrop-blur rounded-3xl shadow-2xl shadow-black/15 border border-[var(--color-line)] p-4 sm:p-6 max-w-4xl mx-auto scroll-mt-28">
-            <CalendlyEmbed />
+          <div id="book" className="max-w-2xl mx-auto scroll-mt-28">
+            <FormCard variant="hero" idSuffix="book" />
           </div>
         </Reveal>
       </div>

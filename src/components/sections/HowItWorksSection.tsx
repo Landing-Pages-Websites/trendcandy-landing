@@ -13,7 +13,7 @@ export function HowItWorksSection() {
             One survey. A year of superior content.
           </h2>
           <p className="text-lg text-[var(--color-ink-muted)] mt-5">
-            From kickoff to a published headline bank in 2-3 weeks — without
+            From kickoff to a published headline bank in 2-3 weeks, without
             you writing a single research question.
           </p>
         </Reveal>

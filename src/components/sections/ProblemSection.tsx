@@ -4,7 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { PROBLEMS, BRAND } from "@/lib/content";
 
 /**
- * "Content Black Hole" problem framing — sets up why original survey data
+ * "Content Black Hole" problem framing: sets up why original survey data
  * is the only thing that consistently breaks through right now.
  */
 export function ProblemSection() {
@@ -19,7 +19,7 @@ export function ProblemSection() {
           <p className="text-lg text-[var(--color-ink-muted)] mt-5 leading-relaxed">
             Generic LLM-written posts. Opinion blogs nobody links to. PDFs that
             never get cited. Without an original-data hook, your content
-            marketing keeps shouting into a void — while AI-search and the
+            marketing keeps shouting into a void, while AI-search and the
             press keep citing the brands that bring numbers.
           </p>
         </Reveal>

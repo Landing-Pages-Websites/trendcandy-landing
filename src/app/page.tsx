@@ -14,11 +14,11 @@ import { FAQSection } from "@/components/sections/FAQSection";
 import { BookSection } from "@/components/sections/BookSection";
 
 export const metadata: Metadata = {
-  title: "Book a Dream Headlines Session | TrendCandy — B2B Survey Data, Done For You",
+  title: "Book a Dream Headlines Session | TrendCandy: B2B Survey Data, Done For You",
   description:
     "Done-for-you B2B survey research that becomes a year of thought-leadership content. Get cited in AI search, the press, and your buyer's inbox. Book a 30-minute Dream Headlines session.",
   openGraph: {
-    title: "TrendCandy — B2B Survey Data, Done For You",
+    title: "TrendCandy: B2B Survey Data, Done For You",
     description:
       "Original survey data that becomes your most valuable content and AI-search asset. Book a 30-min Dream Headlines session with Justin Ethington.",
     url: "https://book.trendcandy.io",

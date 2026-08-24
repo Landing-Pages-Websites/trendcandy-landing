@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/content";
 
 /**
- * Floating sticky CTA — form-only (task has_phone_leads=false).
+ * Floating sticky CTA: form-only (task has_phone_leads=false).
  * Appears after user scrolls past hero.
  */
 export function FloatingCTA() {

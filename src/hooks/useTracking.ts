@@ -16,10 +16,11 @@ declare global {
     TRACKING_API_ENDPOINT?: string;
     /**
      * Mega optimizer global. The optimizer normally auto-detects native form
-     * submits and fires `form_submit` itself, but our forms use the
-     * validate-first + requestSubmit + type="button" pattern (AGENTS.md Hard
-     * Rule #5) — which intentionally bypasses the native submit event to
-     * prevent duplicate-firing. That means callers MUST manually invoke
+     * submits and fires `form_submit` itself, but our forms use a
+     * validate-first, type="button" pattern (AGENTS.md Hard Rule #5): the
+     * button's onClick calls the submit routine directly and no native submit
+     * is ever dispatched, so the optimizer's auto-detect never sees an event.
+     * That means callers MUST manually invoke
      * `window.MegaTag?.trackEvent("form_submit", {...})` on a successful
      * submission so the event still lands in Mega Events / GTM / Pixel.
      */
@@ -33,7 +34,7 @@ declare global {
 }
 
 /**
- * useTracking — backup layer. Primary MegaTag config + optimizer script
+ * useTracking: backup layer. Primary MegaTag config + optimizer script
  * live in layout.tsx <head> (per the lint enforcement + working repower-
  * landing pattern, see memory/skill-gotchas.md).
  */

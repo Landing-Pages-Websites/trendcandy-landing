@@ -16,7 +16,7 @@ export function QueryParamPersistence() {
         sessionStorage.setItem("landing_params", params);
       }
     } catch {
-      // sessionStorage can throw in some privacy modes — silently noop
+      // sessionStorage can throw in some privacy modes: silently noop
     }
 
     const handleHashChange = () => {

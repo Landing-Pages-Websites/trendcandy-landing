@@ -16,7 +16,7 @@ export function AboutSection() {
             {AUTHORITY.name} spent a decade running survey research and
             content programs inside one of B2B&apos;s most cited research
             engines. He started {BRAND.name} to bring that same headline-grade
-            survey work to brands without a research team — at a budget that
+            survey work to brands without a research team, at a budget that
             makes sense for a marketing department, not a McKinsey engagement.
           </p>
 
@@ -61,12 +61,12 @@ export function AboutSection() {
           <div className="bg-[var(--color-surface-alt)] border border-[var(--color-line)] rounded-3xl p-7 sm:p-9 shadow-sm">
             <p className="eyebrow">Who this is for</p>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-ink)] mt-3 leading-snug">
-              We&apos;re for brands that want to <span className="underline-brush">publish</span> data — not just collect it.
+              We&apos;re for brands that want to <span className="underline-brush">publish</span> data, not just collect it.
             </h3>
             <div className="grid sm:grid-cols-2 gap-5 mt-7">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-600 mb-3">
-                  YES — a fit
+                  YES, a fit
                 </p>
                 <ul className="space-y-3">
                   {WHO_FOR.yes.map((y) => (

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* TrendCandy — Brand tokens
- * Source: https://www.trendcandy.io (2026-05-15) — orange #FF6919 primary,
+/* TrendCandy: Brand tokens
+ * Source: https://www.trendcandy.io (2026-05-15). Orange #FF6919 primary,
  * sky #69C1E1 secondary, warm peach tints, Poppins headings.
  */
 @theme {
@@ -141,7 +141,7 @@ html {
   .aurora-warm { animation: none; }
 }
 
-/* Marquee — horizontally scrolling trust strip */
+/* Marquee: horizontally scrolling trust strip */
 .marquee {
   overflow: hidden;
   position: relative;
@@ -170,7 +170,7 @@ html {
               0 12px 30px -10px rgba(255, 105, 25, 0.55);
 }
 
-/* Pulsing dot — "live" indicators */
+/* Pulsing dot: "live" indicators */
 .dot-pulse {
   position: relative;
   display: inline-flex;
@@ -208,17 +208,6 @@ html {
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
-}
-
-/* Calendly inline embed — make sure full month grid is visible without internal scroll */
-.calendly-inline-widget {
-  min-width: 320px;
-  height: 1100px;
-}
-@media (max-width: 768px) {
-  .calendly-inline-widget {
-    height: 1180px;
-  }
 }
 
 /* Typewriter zero-CLS slot: reservation phrases + live text share one grid

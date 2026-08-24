@@ -11,7 +11,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
-// TrendCandy tracking IDs — sourced from Atlas task input_data
+// TrendCandy tracking IDs: sourced from Atlas task input_data
 // (d7531759-43c2-4389-bb00-dcd83c4de4c7) plus Mega Admin site registration
 // already created for this customer. Reuse site_key / site_id; do not
 // create a new Mega site record (director scope note 2026-05-15).
@@ -49,7 +49,7 @@ export default function RootLayout({
       className={`${poppins.variable} h-full antialiased`}
     >
       <head>
-        {/* MegaTag — siteId + endpoints + meta tag required for form_submit events */}
+        {/* MegaTag: siteId + endpoints + meta tag required for form_submit events */}
         <meta name="mega-site-id" content={SITE_ID} />
         <script
           dangerouslySetInnerHTML={{
@@ -62,7 +62,7 @@ export default function RootLayout({
           data-site-id={SITE_ID}
           async
         />
-        {/* GTM container — customer-specific (TrendCandy: GTM-PD2L7FJC) */}
+        {/* GTM container, customer-specific (TrendCandy: GTM-PD2L7FJC) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`,
@@ -79,7 +79,7 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
-        {/* CallTrackingMetrics — required on every MEGA LP per AGENTS.md Build R4 */}
+        {/* CallTrackingMetrics: required on every MEGA LP per AGENTS.md Build R4 */}
         <Script
           id="ctm-script"
           src="//572388.tctm.co/t.js"

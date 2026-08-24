@@ -4,7 +4,7 @@ import Image from "next/image";
 import { CLIENT_LOGOS } from "@/lib/content";
 
 /**
- * Trust bar — scrolling marquee of brands TrendCandy has shipped survey
+ * Trust bar: scrolling marquee of brands TrendCandy has shipped survey
  * content for. Sourced from www.trendcandy.io/our-clients block 2026-05-15.
  */
 export function TrustBarSection() {

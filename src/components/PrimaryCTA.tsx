@@ -11,7 +11,7 @@ type Props = {
 };
 
 /**
- * Dual CTA — required division rule (button + secondary text link side by side
+ * Dual CTA: required division rule (button + secondary text link side by side
  * in every content section). Removes the prior R3 deduction on TrendCandy LP.
  */
 export function PrimaryCTA({

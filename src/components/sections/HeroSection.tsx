@@ -5,11 +5,11 @@ import { TypewriterCycle } from "@/components/TypewriterCycle";
 import { BRAND, HERO_STATS } from "@/lib/content";
 
 /**
- * Hero — TrendCandy.
+ * Hero: TrendCandy.
  *   - Big editorial headline + sub
  *   - Sky-to-peach gradient with warm aurora glow (brand colors)
  *   - Top stats strip
- *   - Dual CTA — primary "Book a Dream Headlines Session" + secondary "See client wins"
+ *   - Dual CTA: primary "Book a Dream Headlines Session" + secondary "See client wins"
  */
 export function HeroSection() {
   return (
@@ -41,7 +41,7 @@ export function HeroSection() {
           </h1>
 
           <p className="text-lg sm:text-xl text-[var(--color-ink-muted)] max-w-3xl mx-auto leading-relaxed">
-            We run the survey, find the headline stats, and turn them into the content your team publishes all year — and AI search engines cite.
+            We run the survey, find the headline stats, and turn them into the content your team publishes all year, and AI search engines cite.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 pt-2">

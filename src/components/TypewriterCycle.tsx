@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
  *
  * Layout note (zero CLS): the animated text is NOT allowed to drive layout.
  * We render an invisible reservation copy of every phrase stacked in a single
- * `inline-grid` cell — the cell sizes itself to the WIDEST phrase (caret
+ * `inline-grid` cell: the cell sizes itself to the WIDEST phrase (caret
  * included) and never changes. The live, animating text is overlaid in that
  * same cell, so the headline occupies a constant width / line count no matter
  * which phrase is currently typed. When the visible text is empty we still
@@ -32,7 +32,7 @@ type Props = {
   className?: string;
 };
 
-/* prefers-reduced-motion via useSyncExternalStore — avoids setState-in-effect. */
+/* prefers-reduced-motion via useSyncExternalStore: avoids setState-in-effect. */
 const PRM_QUERY = "(prefers-reduced-motion: reduce)";
 function subscribeReducedMotion(cb: () => void) {
   if (typeof window === "undefined" || !window.matchMedia) return () => {};
@@ -99,13 +99,13 @@ export function TypewriterCycle({
         timerRef.current = setTimeout(() => setPhase("gap"), gapMs);
       }
     } else if (phase === "gap") {
-      // Move to the next phrase and start typing again — scheduled, not sync.
+      // Move to the next phrase and start typing again, scheduled, not sync.
       timerRef.current = setTimeout(() => {
         setIndex((i) => (i + 1) % safePhrases.length);
         setPhase("typing");
       }, 0);
     } else if (phase === "holding") {
-      // Defensive — current state machine never lands here, but if it does,
+      // Defensive: current state machine never lands here, but if it does,
       // bridge it straight into the delete phase.
       timerRef.current = setTimeout(() => setPhase("deleting"), holdMs);
     }

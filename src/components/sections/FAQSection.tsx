@@ -15,7 +15,7 @@ export function FAQSection() {
             Questions content teams ask before booking.
           </h2>
           <p className="text-lg text-[var(--color-ink-muted)] mt-5">
-            If yours isn&apos;t answered here, ask Justin on the call — he&apos;d rather you have the right answer than a polished pitch.
+            If yours isn&apos;t answered here, ask Justin on the call. He&apos;d rather you have the right answer than a polished pitch.
           </p>
         </Reveal>
 

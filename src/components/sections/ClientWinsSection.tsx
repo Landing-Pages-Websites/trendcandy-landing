@@ -23,7 +23,7 @@ export function ClientWinsSection() {
             Survey-backed content that won the year.
           </h2>
           <p className="text-lg text-white/75 mt-5">
-            A snapshot of campaigns built on TrendCandy survey data — from
+            A snapshot of campaigns built on TrendCandy survey data, from
             tier-1 media coverage to category-leading lead-gen pieces.
           </p>
         </Reveal>
