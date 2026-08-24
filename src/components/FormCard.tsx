@@ -30,9 +30,12 @@ const FORM_PROVIDER = "trendcandy-landing";
  *   4. phone       required (US 10-digit)
  *
  * On a genuinely successful lead-API response we fire a single manual
- * `form_submit` (MegaTag + GTM dataLayer, structural metadata only, no PII)
- * and then redirect to Justin's Calendly (step two) to pick a time. Nothing
- * fires on validation failure, empty submit, an in-flight click, or API error.
+ * MegaTag `form_submit` plus a deliberately distinct GTM dataLayer backup
+ * event named `form_submission` (structural metadata only, no PII) and then
+ * redirect to Justin's Calendly (step two) to pick a time. The backup event is
+ * intentionally not named `form_submit` so it never double-counts the
+ * MegaTag-managed conversion in dataLayer. Nothing fires on validation
+ * failure, empty submit, an in-flight click, or API error.
  *
  * Anti-disruption pattern: the button is type="button" and calls the submit
  * routine directly and we never programmatically request a native `submit`
@@ -86,9 +89,15 @@ export function FormCard({
     } catch (trackErr) {
       void trackErr; // analytics must never block the redirect
     }
+    // Backup GTM dataLayer event, deliberately named "form_submission" (not
+    // "form_submit") so it stays distinct from the MegaTag-managed form_submit
+    // signal above. MegaTag already surfaces form_submit into dataLayer, so
+    // reusing that name here would double-count the conversion; the distinct
+    // name lets GTM catch the lead if MegaTag fails to load without inflating
+    // the primary form_submit metric.
     const w = window as typeof window & { dataLayer?: unknown[] };
     w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({ event: "form_submit", ...meta });
+    w.dataLayer.push({ event: "form_submission", ...meta });
   }
 
   async function performSubmit() {
