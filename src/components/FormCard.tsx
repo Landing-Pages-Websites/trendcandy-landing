@@ -20,6 +20,12 @@ type Props = {
 
 const FORM_PROVIDER = "trendcandy-landing";
 
+const PRIVACY_POLICY_URL = "https://book.trendcandy.io/privacy-policy";
+const TERMS_URL = "https://book.trendcandy.io/terms-and-conditions";
+
+const SMS_CONSENT_TEXT =
+  "By checking this box, you agree to receive SMS customer-care messages from TrendCandy, including inquiry responses, Dream Headlines session scheduling, appointment confirmations, reminders, and project updates. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out. Reply HELP for help. Consent is not a condition of purchase. Your mobile information will not be sold or shared with third parties for promotional or marketing purposes.";
+
 /**
  * TrendCandy lead form: step one of the booking flow.
  *
@@ -60,6 +66,7 @@ export function FormCard({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +118,10 @@ export function FormCard({
         lastName: lastName.trim(),
         email: email.trim(),
         phone: formatUsPhone(phone),
+        smsConsent,
+        smsConsentText: smsConsent
+          ? `${SMS_CONSENT_TEXT} Privacy Policy: ${PRIVACY_POLICY_URL} | Terms and Conditions: ${TERMS_URL}`
+          : "Not provided",
       });
       // Success only past this point: fire once, then hand off to Calendly.
       // We intentionally leave inFlightRef/submitting set so the in-progress
@@ -262,6 +273,42 @@ export function FormCard({
             aria-describedby={error ? `err-${idSuffix}` : undefined}
             className={inputClass}
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor={`sms-${idSuffix}`}
+            className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-[var(--color-ink-muted)]"
+          >
+            <input
+              id={`sms-${idSuffix}`}
+              name="smsConsent"
+              type="checkbox"
+              checked={smsConsent}
+              onChange={(e) => setSmsConsent(e.target.checked)}
+              disabled={submitting}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--color-line)] accent-[var(--color-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+            />
+            <span>
+              {SMS_CONSENT_TEXT}{" "}
+              <a
+                href={PRIVACY_POLICY_URL}
+                className="font-semibold text-[var(--color-primary)] underline"
+              >
+                Privacy Policy
+              </a>
+              {" | "}
+              <a
+                href={TERMS_URL}
+                className="font-semibold text-[var(--color-primary)] underline"
+              >
+                Terms and Conditions
+              </a>
+            </span>
+          </label>
+          <p className="mt-1.5 pl-[1.625rem] text-[11px] leading-relaxed text-[var(--color-ink-muted)]">
+            Optional. You can submit this form without opting in to text messages.
+          </p>
         </div>
 
         {error && (
