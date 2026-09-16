@@ -276,6 +276,12 @@ const assertValid = (formData: Record<string, unknown>): void => {
   if (!isValidUsPhone(formData.phone)) {
     throw new Error("Phone must be exactly 10 digits");
   }
+  if (
+    formData.marketingDecisionInfluence !== "Yes" &&
+    formData.marketingDecisionInfluence !== "No"
+  ) {
+    throw new Error("marketingDecisionInfluence must be exactly 'Yes' or 'No'");
+  }
 };
 
 export function useMegaLeadForm(

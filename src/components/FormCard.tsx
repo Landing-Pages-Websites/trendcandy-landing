@@ -23,6 +23,12 @@ const FORM_PROVIDER = "trendcandy-landing";
 const PRIVACY_POLICY_URL = "https://book.trendcandy.io/privacy-policy";
 const TERMS_URL = "https://book.trendcandy.io/terms-and-conditions";
 
+// Stable classification reason for a "No" answer to the marketing-decision
+// question. Sent as metadata alongside the lead so Keystone can bucket
+// disqualified leads without re-deriving intent from the raw answer.
+const DISQUALIFICATION_REASON_NO_MARKETING_INFLUENCE =
+  "does_not_influence_marketing_decisions";
+
 const SMS_CONSENT_TEXT =
   "By checking this box, you agree to receive SMS customer-care messages from TrendCandy, including inquiry responses, Dream Headlines session scheduling, appointment confirmations, reminders, and project updates. Message frequency may vary. Message and data rates may apply. Reply STOP to opt out. Reply HELP for help. Consent is not a condition of purchase. Your mobile information will not be sold or shared with third parties for promotional or marketing purposes.";
 
@@ -30,10 +36,17 @@ const SMS_CONSENT_TEXT =
  * TrendCandy lead form: step one of the booking flow.
  *
  * Fields (in submit order):
- *   1. firstName   required
- *   2. lastName    required
- *   3. email       required
- *   4. phone       required (US 10-digit)
+ *   1. firstName                    required
+ *   2. lastName                     required
+ *   3. email                        required
+ *   4. phone                        required (US 10-digit)
+ *   5. companyName                  optional (trimmed; "" when omitted)
+ *   6. marketingDecisionInfluence   required ("Yes" | "No")
+ *
+ * The marketing-decision answer also encodes qualification metadata in the
+ * lead payload — `qualified` (true only for "Yes") and a stable
+ * `disqualification_reason` (empty for "Yes"). Both answers still submit and
+ * redirect to Calendly; qualification is downstream metadata, not routing.
  *
  * On a genuinely successful lead-API response we fire a single manual
  * MegaTag `form_submit` plus a deliberately distinct GTM dataLayer backup
@@ -66,6 +79,10 @@ export function FormCard({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [marketingDecisionInfluence, setMarketingDecisionInfluence] = useState<
+    "" | "Yes" | "No"
+  >("");
   const [smsConsent, setSmsConsent] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -73,11 +90,14 @@ export function FormCard({
 
   const emailValid = isValidEmail(email);
   const phoneValid = isValidUsPhone(phone);
+  const marketingDecisionValid =
+    marketingDecisionInfluence === "Yes" || marketingDecisionInfluence === "No";
   const canSubmit =
     firstName.trim().length >= 1 &&
     lastName.trim().length >= 1 &&
     emailValid &&
-    phoneValid;
+    phoneValid &&
+    marketingDecisionValid;
 
   const formId = `form-${idSuffix}`;
 
@@ -118,6 +138,16 @@ export function FormCard({
         lastName: lastName.trim(),
         email: email.trim(),
         phone: formatUsPhone(phone),
+        companyName: companyName.trim(),
+        marketingDecisionInfluence,
+        // Qualification metadata (not a visible question): "Yes" qualifies the
+        // lead, "No" disqualifies it with a stable, machine-readable reason.
+        // Both still submit and route to Calendly per the customer's directive.
+        qualified: marketingDecisionInfluence === "Yes",
+        disqualification_reason:
+          marketingDecisionInfluence === "Yes"
+            ? ""
+            : DISQUALIFICATION_REASON_NO_MARKETING_INFLUENCE,
         smsConsent,
         smsConsentText: smsConsent
           ? `${SMS_CONSENT_TEXT} Privacy Policy: ${PRIVACY_POLICY_URL} | Terms and Conditions: ${TERMS_URL}`
@@ -274,6 +304,57 @@ export function FormCard({
             className={inputClass}
           />
         </div>
+
+        <div>
+          <label htmlFor={`co-${idSuffix}`} className="sr-only">
+            Company Name
+          </label>
+          <input
+            id={`co-${idSuffix}`}
+            name="companyName"
+            type="text"
+            autoComplete="organization"
+            placeholder="Company Name"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        <fieldset>
+          <legend className="text-sm font-semibold text-[var(--color-ink)] mb-2">
+            Do you influence marketing decisions at a company?
+          </legend>
+          <div className="grid grid-cols-2 gap-3">
+            {(["Yes", "No"] as const).map((option) => {
+              const selected = marketingDecisionInfluence === option;
+              return (
+                <label
+                  key={option}
+                  htmlFor={`mdi-${option.toLowerCase()}-${idSuffix}`}
+                  className={`flex cursor-pointer items-center justify-center rounded-xl border-2 px-4 py-3 text-base font-semibold transition focus-within:ring-2 focus-within:ring-[var(--color-primary)] ${
+                    selected
+                      ? "border-[var(--color-primary)] bg-[color-mix(in_srgb,var(--color-primary)_8%,white)] text-[var(--color-ink)]"
+                      : "border-[var(--color-line)] bg-white text-[var(--color-ink-muted)] hover:border-[var(--color-primary)]"
+                  }`}
+                >
+                  <input
+                    id={`mdi-${option.toLowerCase()}-${idSuffix}`}
+                    name="marketingDecisionInfluence"
+                    type="radio"
+                    value={option}
+                    checked={selected}
+                    onChange={() => setMarketingDecisionInfluence(option)}
+                    disabled={submitting}
+                    required
+                    className="sr-only"
+                  />
+                  {option}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div>
           <label
