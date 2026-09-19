@@ -9,7 +9,7 @@ import {
   isValidUsPhone,
   formatUsPhone,
 } from "@/hooks/useMegaLeadForm";
-import { BRAND } from "@/lib/content";
+import { resolveCalendlyUrl } from "@/lib/content";
 
 type Props = {
   variant?: "hero" | "card" | "inline";
@@ -105,11 +105,11 @@ export function FormCard({
   // because our validate-first pattern bypasses the optimizer's native-submit
   // auto-detect, so the successful `form_submit` must be fired by hand for the
   // sibling Meta / GTM instrumentation to receive it.
-  function fireConversion() {
+  function fireConversion(destination: string) {
     const meta = {
       form_id: formId,
       form_provider: FORM_PROVIDER,
-      destination: BRAND.calendlyUrl,
+      destination,
     };
     try {
       window.MegaTag?.trackEvent?.("form_submit", meta);
@@ -154,10 +154,16 @@ export function FormCard({
           : "Not provided",
       });
       // Success only past this point: fire once, then hand off to Calendly.
-      // We intentionally leave inFlightRef/submitting set so the in-progress
-      // navigation cannot be double-triggered.
-      fireConversion();
-      window.location.assign(BRAND.calendlyUrl);
+      // Resolve the destination from the live landing URL so Google Ads
+      // visitors get the Google-specific page and everyone else keeps the
+      // default Meta page; the same resolved URL is used for the conversion
+      // metadata and the redirect. We intentionally leave inFlightRef/submitting
+      // set so the in-progress navigation cannot be double-triggered.
+      const destination = resolveCalendlyUrl(
+        new URLSearchParams(window.location.search),
+      );
+      fireConversion(destination);
+      window.location.assign(destination);
     } catch (err) {
       // Keep the real error in the console for developer diagnostics, but never
       // surface raw HTTP status or exception text to the visitor.

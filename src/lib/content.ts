@@ -44,6 +44,33 @@ export const BRAND = {
   ctaSubLabel: "30 minutes · No commitment · Free survey concepts",
 } as const;
 
+// Post-submit Calendly hand-off. Google Ads visitors go to a Google-specific
+// booking page; everyone else (Meta via fbclid/utm_source, plus direct traffic)
+// keeps the default Meta page (BRAND.calendlyUrl). Both destinations are
+// immutable and used verbatim, with no appended query parameters.
+export const CALENDLY_URL_GOOGLE =
+  "https://calendly.com/trendcandy/trendcandy-google";
+
+// Google-originated click IDs. Presence of any one marks the visit as coming
+// from Google Ads (auto-tagging drops gclid; gbraid/wbraid cover iOS/app and
+// web-to-app journeys).
+const GOOGLE_CLICK_ID_PARAMS = ["gclid", "gbraid", "wbraid"] as const;
+
+/**
+ * Resolve the post-submit Calendly destination from the landing URL's query.
+ * A visit is Google-originated when it carries at least one Google Ads click ID
+ * (gclid/gbraid/wbraid) or utm_source=google (case-insensitive). All other
+ * traffic keeps the default Meta destination.
+ */
+export function resolveCalendlyUrl(params: URLSearchParams): string {
+  const hasGoogleClickId = GOOGLE_CLICK_ID_PARAMS.some((p) => params.has(p));
+  const isGoogleUtmSource =
+    params.get("utm_source")?.toLowerCase() === "google";
+  return hasGoogleClickId || isGoogleUtmSource
+    ? CALENDLY_URL_GOOGLE
+    : BRAND.calendlyUrl;
+}
+
 // Trust-bar logos: clients TrendCandy has produced survey content for
 // (from www.trendcandy.io homepage 2026-05-15). Local copies in /public/images.
 export const CLIENT_LOGOS: ClientLogo[] = [
