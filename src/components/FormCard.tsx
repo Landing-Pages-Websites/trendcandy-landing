@@ -9,7 +9,11 @@ import {
   isValidUsPhone,
   formatUsPhone,
 } from "@/hooks/useMegaLeadForm";
-import { resolveCalendlyUrl } from "@/lib/content";
+import { CALENDLY_URL_GOOGLE, resolveCalendlyUrl } from "@/lib/content";
+import {
+  isGoogleLandingPath,
+  resolveGoogleCalendlyUrl,
+} from "@/lib/googleCalendly";
 
 type Props = {
   variant?: "hero" | "card" | "inline";
@@ -159,9 +163,11 @@ export function FormCard({
       // default Meta page; the same resolved URL is used for the conversion
       // metadata and the redirect. We intentionally leave inFlightRef/submitting
       // set so the in-progress navigation cannot be double-triggered.
-      const destination = resolveCalendlyUrl(
-        new URLSearchParams(window.location.search),
-      );
+      // The dedicated /google page always routes to the Google page with its
+      // ad attribution forwarded; every other page keeps the query selector.
+      const destination = isGoogleLandingPath(window.location.pathname)
+        ? resolveGoogleCalendlyUrl(CALENDLY_URL_GOOGLE)
+        : resolveCalendlyUrl(new URLSearchParams(window.location.search));
       fireConversion(destination);
       window.location.assign(destination);
     } catch (err) {
