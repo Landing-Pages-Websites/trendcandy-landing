@@ -4,6 +4,9 @@ import { Reveal } from "@/components/Reveal";
 import { TypewriterCycle } from "@/components/TypewriterCycle";
 import { BRAND, HERO_STATS } from "@/lib/content";
 
+const VSL_SRC = "/videos/trendcandy-vsl-july-2026.mp4";
+const VSL_POSTER = "/images/trendcandy-vsl-poster.jpg";
+
 /**
  * Hero: TrendCandy.
  *   - Big editorial headline + sub
@@ -11,7 +14,7 @@ import { BRAND, HERO_STATS } from "@/lib/content";
  *   - Top stats strip
  *   - Dual CTA: primary "Book a Dream Headlines Session" + secondary "See client wins"
  */
-export function HeroSection() {
+export function HeroSection({ showVsl = false }: { showVsl?: boolean }): React.JSX.Element {
   return (
     <section
       id="hero"
@@ -43,6 +46,20 @@ export function HeroSection() {
           <p className="text-lg sm:text-xl text-[var(--color-ink-muted)] max-w-3xl mx-auto leading-relaxed">
             We run the survey, find the headline stats, and turn them into the content your team publishes all year, and AI search engines cite.
           </p>
+
+          {showVsl && (
+            <div className="relative w-full max-w-3xl mx-auto aspect-video overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-ink)] shadow-sm">
+              <video
+                className="absolute inset-0 h-full w-full object-contain"
+                src={VSL_SRC}
+                poster={VSL_POSTER}
+                controls
+                playsInline
+                preload="none"
+                aria-label="TrendCandy video: how done-for-you survey data becomes your content"
+              />
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 pt-2">
             <a
