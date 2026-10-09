@@ -33,7 +33,7 @@ export default function Page() {
     <>
       <Header />
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection showVsl />
         <TrustBarSection />
         <ProblemSection />
         <HowItWorksSection />
