@@ -42,7 +42,7 @@ export default function Page() {
         <AboutSection />
         <GuaranteeSection />
         <FAQSection />
-        <BookSection />
+        <BookSection booking="calendly" />
       </main>
       <Footer />
       <FloatingCTA />
