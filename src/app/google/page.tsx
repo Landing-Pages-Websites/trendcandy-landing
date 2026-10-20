@@ -50,7 +50,7 @@ export default function GooglePage() {
         <BookSection booking="calendly" destination="google" />
       </main>
       <Footer />
-      <FloatingCTA />
+      <FloatingCTA hideWhileInViewId="book" />
     </>
   );
 }
