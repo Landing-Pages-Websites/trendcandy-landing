@@ -1,13 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Script from "next/script";
-import { BRAND } from "@/lib/content";
+import { BRAND, CALENDLY_URL_GOOGLE } from "@/lib/content";
+import { resolveGoogleCalendlyUrl } from "@/lib/googleCalendly";
 
 /**
- * CalendlyEmbed: inline Calendly booking widget for the root page's #book
- * section. Booking happens entirely inside Calendly: no lead form, no
+ * CalendlyEmbed: inline Calendly booking widget for a page's #book section.
+ * Booking happens entirely inside Calendly: no lead form, no
  * form_submit / form_submission event.
+ *
+ * `destination` picks the booking page: "meta" (default, root page) embeds
+ * the Meta page verbatim; "google" (/google only) embeds the Google page with
+ * the visit's allow-listed ad attribution (utm_*, gclid/gbraid/wbraid)
+ * forwarded, resolved in the browser so current attribution wins.
  *
  * Calendly's postMessage lifecycle events are relayed into GTM's dataLayer
  * (and a confirmed booking into MegaTag) so the analytics stack keeps an
@@ -33,12 +39,54 @@ const DATALAYER_STEP_EVENT = "calendly_event";
 const DATALAYER_BOOKED_EVENT = "calendly_booking_confirmed";
 const MEGATAG_BOOKED_EVENT = "calendly_booked";
 const MEGATAG_BOOKED_PAYLOAD = { element: "calendly-inline", provider: "calendly" };
-const EMBED_URL = `${BRAND.calendlyUrl}?hide_event_type_details=0&hide_gdpr_banner=1`;
+const EMBED_OPTIONS = { hide_event_type_details: "0", hide_gdpr_banner: "1" } as const;
+
+// Per-destination booking page and how its link is resolved in the browser:
+// Meta is used verbatim; Google forwards the visit's allow-listed attribution.
+const DESTINATIONS = {
+  meta: { baseUrl: BRAND.calendlyUrl, resolve: (url: string): string => url },
+  google: { baseUrl: CALENDLY_URL_GOOGLE, resolve: resolveGoogleCalendlyUrl },
+} as const;
+
+export type CalendlyDestination = keyof typeof DESTINATIONS;
+
+type CalendlyEmbedProps = { destination?: CalendlyDestination };
 
 type DataLayerWindow = Window & { dataLayer?: unknown[] };
 
+/** Bookable page for the new-tab fallback link (browser only for "google"). */
+export function resolveBookingUrl(destination: CalendlyDestination): string {
+  const { baseUrl, resolve } = DESTINATIONS[destination];
+  return resolve(baseUrl);
+}
+
+/** Inline-widget URL: the booking page plus Calendly's embed display options. */
+export function resolveEmbedUrl(destination: CalendlyDestination): string {
+  const url = new URL(resolveBookingUrl(destination));
+  for (const [key, value] of Object.entries(EMBED_OPTIONS)) url.searchParams.set(key, value);
+  return url.toString();
+}
+
+// The snapshot re-reads location/storage on render; there are no change events.
+const subscribeNoop = (): (() => void) => () => {};
+
+/**
+ * Mount the inline widget into `host` unless one is already there. Returns
+ * whether a widget is present; false while Calendly's script isn't loaded.
+ * The iframe check makes repeat calls (onLoad + onReady, remounts) no-ops.
+ */
+export function initCalendlyWidget(
+  host: HTMLElement | null,
+  destination: CalendlyDestination,
+): boolean {
+  if (!host || !window.Calendly?.initInlineWidget) return false;
+  if (host.querySelector("iframe")) return true;
+  window.Calendly.initInlineWidget({ url: resolveEmbedUrl(destination), parentElement: host });
+  return true;
+}
+
 /** Calendly lifecycle event name from an authentic widget message, else null. */
-function readCalendlyEvent(e: MessageEvent, host: HTMLElement | null): string | null {
+export function readCalendlyEvent(e: MessageEvent, host: HTMLElement | null): string | null {
   if (e.origin !== CALENDLY_ORIGIN) return null;
   const frame = host?.querySelector("iframe");
   if (!frame || e.source !== frame.contentWindow) return null;
@@ -47,7 +95,7 @@ function readCalendlyEvent(e: MessageEvent, host: HTMLElement | null): string | 
   return event;
 }
 
-function relayCalendlyEvent(calendlyEvent: string): void {
+export function relayCalendlyEvent(calendlyEvent: string): void {
   const w = window as DataLayerWindow;
   w.dataLayer = w.dataLayer || [];
   w.dataLayer.push({
@@ -68,27 +116,27 @@ function relayCalendlyEvent(calendlyEvent: string): void {
   });
 }
 
-export function CalendlyEmbed(): React.JSX.Element {
+export function CalendlyEmbed({
+  destination = "meta",
+}: CalendlyEmbedProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const fallbackUrl = useSyncExternalStore(
+    subscribeNoop,
+    () => resolveBookingUrl(destination),
+    () => DESTINATIONS[destination].baseUrl,
+  );
 
   // Wired to both onLoad and onReady: onReady covers first load and remounts
   // after load, onLoad covers a remount while the script is still in flight.
-  // The iframe check keeps repeat calls from initializing a second widget.
+  // The URL is resolved at call time, so attribution is never a stale snapshot.
   const initWidget = useCallback((): void => {
-    const host = hostRef.current;
-    if (!host || !window.Calendly?.initInlineWidget) return;
-    if (host.querySelector("iframe")) {
-      setReady(true);
-      return;
-    }
     try {
-      window.Calendly.initInlineWidget({ url: EMBED_URL, parentElement: host });
-      setReady(true);
+      if (initCalendlyWidget(hostRef.current, destination)) setReady(true);
     } catch {
       setReady(false); // keep the new-tab fallback link visible
     }
-  }, []);
+  }, [destination]);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent): void => {
@@ -122,7 +170,7 @@ export function CalendlyEmbed(): React.JSX.Element {
         <p className="absolute inset-x-0 top-0 px-4 py-6 text-center text-sm text-[var(--color-ink-muted)]">
           Loading Justin&apos;s calendar…{" "}
           <a
-            href={BRAND.calendlyUrl}
+            href={fallbackUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline focus-visible:underline font-semibold"

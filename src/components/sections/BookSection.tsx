@@ -1,16 +1,18 @@
 "use client";
 
-import { CalendlyEmbed } from "@/components/CalendlyEmbed";
+import { CalendlyEmbed, type CalendlyDestination } from "@/components/CalendlyEmbed";
 import { FormCard } from "@/components/FormCard";
 import { Reveal } from "@/components/Reveal";
 
 type BookSectionProps = {
   /**
-   * "form" (default, used by /google): two-step flow, the on-page lead form
-   * then a redirect to Calendly. "calendly" (root page only): the visitor
-   * picks a time directly in the inline Calendly widget, with no form.
+   * "form" (default): two-step flow, the on-page lead form then a redirect to
+   * Calendly. "calendly" (root page and /google): the visitor picks a time
+   * directly in the inline Calendly widget, with no form.
    */
   booking?: "form" | "calendly";
+  /** Calendly booking page for "calendly": Meta (default, root) or Google (/google). */
+  destination?: CalendlyDestination;
 };
 
 const FORM_INTRO =
@@ -24,7 +26,10 @@ const INTRO_REMAINDER =
  * Booking section: the page's primary CTA target. All page CTAs point to
  * #book and land on the booking surface chosen by `booking`.
  */
-export function BookSection({ booking = "form" }: BookSectionProps): React.JSX.Element {
+export function BookSection({
+  booking = "form",
+  destination = "meta",
+}: BookSectionProps): React.JSX.Element {
   const isDirect = booking === "calendly";
   return (
     <section className="relative overflow-hidden bg-[var(--color-surface)] py-20 sm:py-24">
@@ -46,7 +51,11 @@ export function BookSection({ booking = "form" }: BookSectionProps): React.JSX.E
 
         <Reveal delay={120}>
           <div id="book" className="max-w-2xl mx-auto scroll-mt-28">
-            {isDirect ? <CalendlyEmbed /> : <FormCard variant="hero" idSuffix="book" />}
+            {isDirect ? (
+              <CalendlyEmbed destination={destination} />
+            ) : (
+              <FormCard variant="hero" idSuffix="book" />
+            )}
           </div>
         </Reveal>
       </div>
