@@ -47,7 +47,7 @@ export default function GooglePage() {
         <AboutSection />
         <GuaranteeSection />
         <FAQSection />
-        <BookSection />
+        <BookSection booking="calendly" destination="google" />
       </main>
       <Footer />
       <FloatingCTA />
