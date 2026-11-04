@@ -19,6 +19,8 @@ import { resolveGoogleCalendlyUrl } from "@/lib/googleCalendly";
  * (and a confirmed booking into MegaTag) so the analytics stack keeps an
  * on-page signal for each booking step (view → date/time → scheduled). Only
  * messages from the embedded Calendly iframe on calendly.com are accepted.
+ * A confirmed booking then sends the visitor to /thanks, once, after the
+ * relay: on GTM's eventCallback, or a bounded fallback if GTM never answers.
  */
 
 declare global {
@@ -40,6 +42,11 @@ const DATALAYER_BOOKED_EVENT = "calendly_booking_confirmed";
 const MEGATAG_BOOKED_EVENT = "calendly_booked";
 const MEGATAG_BOOKED_PAYLOAD = { element: "calendly-inline", provider: "calendly" };
 const EMBED_OPTIONS = { hide_event_type_details: "0", hide_gdpr_banner: "1" } as const;
+const THANKS_PATH = "/thanks";
+// GTM's own eventTimeout, plus an independent fallback for when GTM is absent
+// or blocked. Keep the fallback >= the timeout so GTM gets its full window.
+const CONFIRMED_EVENT_TIMEOUT_MS = 2000;
+const REDIRECT_FALLBACK_MS = 2000;
 
 // Per-destination booking page and how its link is resolved in the browser:
 // Meta is used verbatim; Google forwards the visit's allow-listed attribution.
@@ -95,6 +102,33 @@ export function readCalendlyEvent(e: MessageEvent, host: HTMLElement | null): st
   return event;
 }
 
+/**
+ * One-shot redirect to /thanks. `go` may be called any number of times (GTM
+ * eventCallback once per container, the fallback timer) but navigates once,
+ * and never before `release` marks the confirmed push as returned: GTM can
+ * invoke eventCallback synchronously from inside push.
+ */
+function createThanksRedirect(): { go: () => void; release: () => void } {
+  let released = false;
+  let requested = false;
+  let navigated = false;
+  const attempt = (): void => {
+    if (!released || !requested || navigated) return;
+    navigated = true;
+    window.location.assign(THANKS_PATH);
+  };
+  return {
+    go: (): void => {
+      requested = true;
+      attempt();
+    },
+    release: (): void => {
+      released = true;
+      attempt();
+    },
+  };
+}
+
 export function relayCalendlyEvent(calendlyEvent: string): void {
   const w = window as DataLayerWindow;
   w.dataLayer = w.dataLayer || [];
@@ -110,10 +144,24 @@ export function relayCalendlyEvent(calendlyEvent: string): void {
   } catch {
     // A MegaTag failure must not block the GTM backup signal below.
   }
-  w.dataLayer.push({
-    event: DATALAYER_BOOKED_EVENT,
-    form_provider: FORM_PROVIDER,
-  });
+  const redirect = createThanksRedirect();
+  setTimeout(redirect.go, REDIRECT_FALLBACK_MS);
+  try {
+    w.dataLayer.push({
+      event: DATALAYER_BOOKED_EVENT,
+      form_provider: FORM_PROVIDER,
+      eventCallback: redirect.go,
+      eventTimeout: CONFIRMED_EVENT_TIMEOUT_MS,
+    });
+  } finally {
+    redirect.release();
+  }
+}
+
+/** The window message listener: relays authentic Calendly widget events. */
+export function handleCalendlyMessage(e: MessageEvent, host: HTMLElement | null): void {
+  const calendlyEvent = readCalendlyEvent(e, host);
+  if (calendlyEvent) relayCalendlyEvent(calendlyEvent);
 }
 
 export function CalendlyEmbed({
@@ -139,10 +187,7 @@ export function CalendlyEmbed({
   }, [destination]);
 
   useEffect(() => {
-    const onMessage = (e: MessageEvent): void => {
-      const calendlyEvent = readCalendlyEvent(e, hostRef.current);
-      if (calendlyEvent) relayCalendlyEvent(calendlyEvent);
-    };
+    const onMessage = (e: MessageEvent): void => handleCalendlyMessage(e, hostRef.current);
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);

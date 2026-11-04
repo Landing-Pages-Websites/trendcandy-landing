@@ -191,21 +191,31 @@ test("accepts only Calendly-origin messages from the embedded iframe", () => {
   assert.equal(embed.readCalendlyEvent(ok, { querySelector: () => null }), null);
 });
 
-test("relays lifecycle names and the booked payload unchanged", () => {
+test("relays lifecycle names and the booked payload unchanged", (t) => {
+  // The confirmed push now also carries the /thanks redirect's eventCallback
+  // and eventTimeout (covered in post-booking-thanks.test.mjs).
+  t.mock.timers.enable({ apis: ["setTimeout"] });
   const megaTagCalls = [];
   const win = {
     dataLayer: [],
+    location: { assign: () => {} },
     MegaTag: { trackEvent: (...args) => megaTagCalls.push(args) },
   };
   withBrowser({}, () => {
     Object.assign(globalThis.window, win);
     embed.relayCalendlyEvent("calendly.profile_page_viewed");
     embed.relayCalendlyEvent("calendly.event_scheduled");
-    assert.deepEqual(globalThis.window.dataLayer, [
+    const pushed = globalThis.window.dataLayer.map((entry) => {
+      const copy = { ...entry };
+      delete copy.eventCallback;
+      return copy;
+    });
+    assert.deepEqual(pushed, [
       { event: "calendly_event", calendly_step: "calendly.profile_page_viewed", form_provider: "trendcandy-landing" },
       { event: "calendly_event", calendly_step: "calendly.event_scheduled", form_provider: "trendcandy-landing" },
-      { event: "calendly_booking_confirmed", form_provider: "trendcandy-landing" },
+      { event: "calendly_booking_confirmed", form_provider: "trendcandy-landing", eventTimeout: 2000 },
     ]);
+    t.mock.timers.runAll();
   });
   assert.deepEqual(megaTagCalls, [["calendly_booked", { element: "calendly-inline", provider: "calendly" }]]);
 });

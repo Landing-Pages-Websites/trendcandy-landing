@@ -7,8 +7,11 @@ import { BRAND } from "@/lib/content";
 /**
  * Landing-page header per landing-page-architect SKILL Rule #3:
  * logo + single CTA button. Mobile logo h-12 (prior QA R1 deduction was h-10).
+ * `showBookingCta={false}` drops the CTA for post-booking pages (/thanks).
  */
-export function Header() {
+type HeaderProps = { showBookingCta?: boolean };
+
+export function Header({ showBookingCta = true }: HeaderProps): React.JSX.Element {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -43,14 +46,16 @@ export function Header() {
           />
         </a>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <a
-            href="#book"
-            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition shadow-sm"
-          >
-            {BRAND.primaryCtaShort}
-          </a>
-        </div>
+        {showBookingCta && (
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="#book"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition shadow-sm"
+            >
+              {BRAND.primaryCtaShort}
+            </a>
+          </div>
+        )}
       </div>
     </header>
   );
