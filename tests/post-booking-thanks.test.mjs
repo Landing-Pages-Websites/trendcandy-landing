@@ -25,6 +25,7 @@ const NON_SCHEDULED_STEPS = [
 const STEP = (step) => ({ event: "calendly_event", calendly_step: step, form_provider: "trendcandy-landing" });
 const MEGATAG_BOOKED = ["calendly_booked", { element: "calendly-inline", provider: "calendly" }];
 const CONFIRMED_TIMEOUT_MS = 2000;
+const PRIVACY_PATH = "/privacy-policy";
 
 const read = (path) => readFileSync(join(ROOT, path), "utf8");
 
@@ -467,10 +468,28 @@ test("/thanks carries the confirmation, next steps and preparation copy", () => 
   assert.doesNotMatch(text, /[–—]/, "no en/em dashes in visitor copy");
 });
 
-test("/thanks links out only to the main site and keeps the header logo link", () => {
+test("/thanks links out only to the main site or the privacy policy and keeps the header logo link", () => {
   const hrefs = [...thanksHtml.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]);
   assert.ok(hrefs.length > 0);
-  for (const href of hrefs) assert.match(href, /^https:\/\/www\.trendcandy\.io\/?$/);
+  for (const href of hrefs) {
+    if (href === PRIVACY_PATH) continue;
+    assert.match(href, /^https:\/\/www\.trendcandy\.io\/?$/);
+  }
+});
+
+test("/thanks footer links the Privacy Policy beside the main-site link and no booking route", () => {
+  const footer = thanksHtml.match(/<footer[^>]*>[\s\S]*<\/footer>/)?.[0] ?? "";
+  const links = [...footer.matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => ({ href: m[1], text: m[2], tag: m[0] }));
+  assert.deepEqual(links.map(({ href, text }) => [href, text]), [
+    [PRIVACY_PATH, "Privacy Policy"],
+    ["https://www.trendcandy.io", "trendcandy.io"],
+  ]);
+  for (const { tag } of links) {
+    assert.match(tag, /\bmin-h-11\b/, "44px tap target");
+    assert.match(tag, /focus-visible:outline-2/, "keyboard focus ring");
+  }
+  assert.doesNotMatch(footer, /calendly|#book|\/google|terms-and-conditions|<button|<form|<h\d/i);
+  assert.ok(existsSync(join(ROOT, "src/app/privacy-policy/page.tsx")), "privacy route is pre-existing");
 });
 
 test("no sitemap is created for /thanks", () => {
