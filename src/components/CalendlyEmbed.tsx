@@ -103,6 +103,21 @@ export function readCalendlyEvent(e: MessageEvent, host: HTMLElement | null): st
 }
 
 /**
+ * Send the top-level window (this one when unframed) to this LP's /thanks,
+ * resolved here so a framed LP still lands on its own origin. If the browser
+ * throws on top navigation (e.g. a sandboxed frame), only this frame
+ * navigates; a block the browser applies silently is left in place.
+ */
+function navigateTopToThanks(): void {
+  const url = new URL(THANKS_PATH, window.location.href).href;
+  try {
+    (window.top ?? window).location.href = url;
+  } catch {
+    window.location.href = url;
+  }
+}
+
+/**
  * One-shot redirect to /thanks. `go` may be called any number of times (GTM
  * eventCallback once per container, the fallback timer) but navigates once,
  * and never before `release` marks the confirmed push as returned: GTM can
@@ -115,7 +130,7 @@ function createThanksRedirect(): { go: () => void; release: () => void } {
   const attempt = (): void => {
     if (!released || !requested || navigated) return;
     navigated = true;
-    window.location.assign(THANKS_PATH);
+    navigateTopToThanks();
   };
   return {
     go: (): void => {

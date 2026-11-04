@@ -198,7 +198,7 @@ test("relays lifecycle names and the booked payload unchanged", (t) => {
   const megaTagCalls = [];
   const win = {
     dataLayer: [],
-    location: { assign: () => {} },
+    location: { href: "https://lp.example/" },
     MegaTag: { trackEvent: (...args) => megaTagCalls.push(args) },
   };
   withBrowser({}, () => {

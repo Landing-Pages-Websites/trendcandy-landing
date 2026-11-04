@@ -104,15 +104,39 @@ function fakeGtmDataLayer(gtm, order) {
   return dataLayer;
 }
 
+// The LP page the booking happens on, and where its redirect must land.
+const LP_URL = "https://lp.trendcandy.example/google?utm_source=google#book";
+const THANKS_URL = "https://lp.trendcandy.example/thanks";
+
+/**
+ * A fake Location at `href` whose navigations are recorded under `name`.
+ * `refuse` makes navigation throw, like a browser blocking a framed page.
+ */
+function fakeLocation(href, name, record, { refuse = false } = {}) {
+  return {
+    get href() {
+      return href;
+    },
+    set href(url) {
+      if (refuse) throw new Error("SecurityError: top navigation blocked");
+      record.order.push(`navigate:${url}`);
+      record.navigations.push(url);
+      record.frames.push(name);
+    },
+  };
+}
+
 /**
  * Install a fake window for fn(win, record) and restore it afterwards.
- * `gtm` is a GTM behaviour or null (GTM absent); returns the record.
+ * `gtm` is a GTM behaviour or null (GTM absent). `top` is "self" (unframed),
+ * "framed" (a distinct top window), "framedRefused" (top navigation throws)
+ * or "null". Returns the record; `frames` says which window navigated.
  */
-function withWindow({ gtm = null, megaTagThrows = false } = {}, fn) {
-  const record = { order: [], megaTag: [], navigations: [] };
+function withWindow({ gtm = null, megaTagThrows = false, top = "self" } = {}, fn) {
+  const record = { order: [], megaTag: [], navigations: [], frames: [] };
   const win = {
     dataLayer: gtm ? fakeGtmDataLayer(gtm, record.order) : undefined,
-    location: { assign: (url) => { record.order.push(`navigate:${url}`); record.navigations.push(url); } },
+    location: fakeLocation(LP_URL, "self", record),
     MegaTag: {
       trackEvent: (...args) => {
         record.order.push(`megatag:${args[0]}`);
@@ -121,6 +145,13 @@ function withWindow({ gtm = null, megaTagThrows = false } = {}, fn) {
       },
     },
   };
+  const parentUrl = "https://publisher.example/article";
+  win.top = {
+    self: win,
+    framed: { location: fakeLocation(parentUrl, "top", record) },
+    framedRefused: { location: fakeLocation(parentUrl, "top", record, { refuse: true }) },
+    null: null,
+  }[top];
   const saved = Object.getOwnPropertyDescriptor(globalThis, "window");
   Object.defineProperty(globalThis, "window", { value: win, configurable: true, writable: true });
   try {
@@ -160,10 +191,10 @@ test("authenticated scheduled message relays and redirects once after the fallba
     t.mock.timers.tick(1999);
     assert.deepEqual(live.navigations, [], "no redirect before the bounded fallback");
     t.mock.timers.tick(1);
-    assert.deepEqual(live.navigations, ["/thanks"]);
+    assert.deepEqual(live.navigations, [THANKS_URL]);
     t.mock.timers.tick(10000);
   });
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
   assert.equal(run.megaTag.length, 1);
 });
 
@@ -230,7 +261,7 @@ test("scheduled keeps relay order and exact payloads, adding only callback + tim
     "megatag:calendly_booked",
     "push:calendly_booking_confirmed",
     "returned:calendly_booking_confirmed",
-    "navigate:/thanks",
+    `navigate:${THANKS_URL}`,
   ]);
 });
 
@@ -241,10 +272,10 @@ test("GTM callback after the push redirects immediately, timer does not repeat i
     t.mock.timers.tick(499);
     assert.deepEqual(live.navigations, []);
     t.mock.timers.tick(1);
-    assert.deepEqual(live.navigations, ["/thanks"], "callback redirects before the fallback");
+    assert.deepEqual(live.navigations, [THANKS_URL], "callback redirects before the fallback");
     t.mock.timers.tick(10000);
   });
-  assert.deepEqual(run.navigations, ["/thanks"], "callback + fallback navigate once");
+  assert.deepEqual(run.navigations, [THANKS_URL], "callback + fallback navigate once");
 });
 
 test("a synchronous callback inside push navigates only after the push returns", (t) => {
@@ -253,11 +284,11 @@ test("a synchronous callback inside push navigates only after the push returns",
     embed.relayCalendlyEvent(SCHEDULED);
     t.mock.timers.tick(10000);
   });
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
   assert.deepEqual(run.order.slice(-3), [
     "push:calendly_booking_confirmed",
     "returned:calendly_booking_confirmed",
-    "navigate:/thanks",
+    `navigate:${THANKS_URL}`,
   ]);
 });
 
@@ -270,7 +301,7 @@ test("duplicate callbacks (one per GTM container) navigate once", (t) => {
     t.mock.timers.tick(10000);
     confirmed.eventCallback("GTM-D");
   });
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
 });
 
 test("a callback arriving after the fallback does not navigate again", (t) => {
@@ -278,10 +309,10 @@ test("a callback arriving after the fallback does not navigate again", (t) => {
   const run = withWindow({ gtm: GTM.afterFallback }, (win, live) => {
     embed.relayCalendlyEvent(SCHEDULED);
     t.mock.timers.tick(2000);
-    assert.deepEqual(live.navigations, ["/thanks"]);
+    assert.deepEqual(live.navigations, [THANKS_URL]);
     t.mock.timers.tick(10000);
   });
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
 });
 
 test("absent GTM: dataLayer is created, the bounded fallback redirects once", (t) => {
@@ -293,7 +324,7 @@ test("absent GTM: dataLayer is created, the bounded fallback redirects once", (t
     t.mock.timers.tick(10001);
   });
   assert.deepEqual(run.dataLayer.map(fields).map((e) => e.event), ["calendly_event", "calendly_booking_confirmed"]);
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
 });
 
 test("MegaTag failure still pushes the GTM backup and still redirects", (t) => {
@@ -304,7 +335,7 @@ test("MegaTag failure still pushes the GTM backup and still redirects", (t) => {
   });
   assert.deepEqual(run.megaTag, [MEGATAG_BOOKED]);
   assert.equal(run.dataLayer.at(-1).event, "calendly_booking_confirmed");
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
 });
 
 test("missing MegaTag still pushes the GTM backup and still redirects", (t) => {
@@ -315,11 +346,63 @@ test("missing MegaTag still pushes the GTM backup and still redirects", (t) => {
     t.mock.timers.tick(10000);
   });
   assert.equal(run.dataLayer.at(-1).event, "calendly_booking_confirmed");
-  assert.deepEqual(run.navigations, ["/thanks"]);
+  assert.deepEqual(run.navigations, [THANKS_URL]);
 });
 
-test("the redirect has a single navigation site", () => {
-  assert.equal(read("src/components/CalendlyEmbed.tsx").match(/location\.assign/g)?.length, 1);
+// --- Which window navigates ------------------------------------------------------
+
+test("unframed: the page's own (top) window navigates once, to its absolute /thanks", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const run = withWindow({ gtm: GTM.late }, () => {
+    embed.relayCalendlyEvent(SCHEDULED);
+    t.mock.timers.tick(10000);
+  });
+  assert.deepEqual(run.navigations, [THANKS_URL]);
+  assert.deepEqual(run.frames, ["self"]);
+});
+
+// [name, GTM behaviour, navigations already made when relayCalendlyEvent returns]
+const FRAMED_CASES = [["late callback", GTM.late, 0], ["sync callback", GTM.sync, 1], ["absent GTM", null, 0]];
+for (const [name, gtm, navigatedOnReturn] of FRAMED_CASES) {
+  test(`framed (${name}): only the distinct top window navigates, once, to the LP's /thanks`, (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const run = withWindow({ gtm, top: "framed" }, (win, live) => {
+      embed.relayCalendlyEvent(SCHEDULED);
+      assert.equal(live.navigations.length, navigatedOnReturn, "sync callback navigates as the push returns, others wait");
+      t.mock.timers.tick(10000);
+      win.dataLayer.at(-1).eventCallback?.("GTM-LATE");
+    });
+    assert.deepEqual(run.navigations, [THANKS_URL], "LP origin, not the parent page's");
+    assert.deepEqual(run.frames, ["top"], "the framed LP window itself never navigates");
+    assert.equal(run.order.at(-1), `navigate:${THANKS_URL}`, "navigation is the last step");
+    if (gtm) assert.equal(run.order.at(-2), "returned:calendly_booking_confirmed");
+  });
+}
+
+test("framed but top navigation refused: this frame navigates once instead", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const run = withWindow({ gtm: GTM.syncDuplicate, top: "framedRefused" }, () => {
+    embed.relayCalendlyEvent(SCHEDULED);
+    t.mock.timers.tick(10000);
+  });
+  assert.deepEqual(run.navigations, [THANKS_URL]);
+  assert.deepEqual(run.frames, ["self"]);
+});
+
+test("window.top null: falls back to this window, once", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const run = withWindow({ top: "null" }, () => {
+    embed.relayCalendlyEvent(SCHEDULED);
+    t.mock.timers.tick(10000);
+  });
+  assert.deepEqual(run.navigations, [THANKS_URL]);
+  assert.deepEqual(run.frames, ["self"]);
+});
+
+test("the redirect has a single navigation function, called from one place", () => {
+  const source = read("src/components/CalendlyEmbed.tsx");
+  assert.equal(source.match(/location\.assign|location\.replace/g), null);
+  assert.equal(source.match(/navigateTopToThanks\(\)/g)?.length, 2, "definition + one call");
 });
 
 // --- Header ----------------------------------------------------------------------
@@ -394,4 +477,14 @@ test("no sitemap is created for /thanks", () => {
   for (const file of ["src/app/sitemap.ts", "src/app/sitemap.xml", "public/sitemap.xml"]) {
     assert.throws(() => read(file));
   }
+});
+
+test("/thanks uses its legal-only footer, not the booking pages' marketing Footer", () => {
+  const source = read("src/app/thanks/page.tsx");
+  assert.doesNotMatch(source, /components\/Footer"/);
+  assert.match(source, /<ThanksFooter \/>/);
+  const footer = thanksHtml.match(/<footer[^>]*>[\s\S]*<\/footer>/)?.[0] ?? "";
+  assert.match(footer, /© \d{4} TrendCandy\. All rights reserved\./);
+  assert.doesNotMatch(thanksHtml, /\bB2B\b|\bAI\b|thought-leadership/i, "no inherited marketing line");
+  assert.doesNotMatch(footer, /<img/, "the header logo is the only logo");
 });

@@ -1,10 +1,15 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { BookedMark } from "@/components/thanks/BookedMark";
 import { ThanksNextSteps } from "@/components/thanks/ThanksNextSteps";
+import { ThanksFooter } from "@/components/thanks/ThanksFooter";
 import { ThanksPrep } from "@/components/thanks/ThanksPrep";
 import { AUTHORITY, BRAND } from "@/lib/content";
+
+// The session summary's parts, each kept whole with its trailing "·" so a
+// wrapped line never starts with one.
+const SUMMARY_PARTS = BRAND.ctaSubLabel.split(/(?<=·) /);
 
 // Post-booking confirmation (Atlas 12b337ca). Reached only after Calendly
 // confirms a booking; deliberately emits no conversion events of its own
@@ -29,7 +34,7 @@ export default function ThanksPage(): React.JSX.Element {
             <BookedMark />
             <h1
               id="confirmation-title"
-              className="mt-8 text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] text-[var(--color-ink)] sm:text-6xl lg:text-7xl"
+              className="mt-8 text-[2.625rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-[var(--color-ink)] sm:text-6xl lg:text-7xl"
             >
               You&apos;re booked.
             </h1>
@@ -37,9 +42,16 @@ export default function ThanksPage(): React.JSX.Element {
               Your Dream Headlines Session is on the calendar.
             </p>
             <p className="mt-6 text-base leading-[1.65] text-[var(--color-ink-muted)]">
-              A call with {AUTHORITY.name}, founder&nbsp;of&nbsp;{BRAND.name}.
+              A call with {AUTHORITY.name}, founder{" "}
+              <span className="whitespace-nowrap">of {BRAND.name}.</span>
             </p>
-            <p className="mt-1 text-balance text-sm font-semibold text-[var(--color-primary-700)]">{BRAND.ctaSubLabel}</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--color-primary-700)]">
+              {SUMMARY_PARTS.map((part) => (
+                <Fragment key={part}>
+                  <span className="whitespace-nowrap">{part}</span>{" "}
+                </Fragment>
+              ))}
+            </p>
           </section>
 
           <ThanksNextSteps />
@@ -50,14 +62,14 @@ export default function ThanksPage(): React.JSX.Element {
             <a
               href={BRAND.parentSite}
               rel="noopener"
-              className="rounded-sm font-semibold text-[var(--color-primary-700)] underline decoration-2 decoration-[var(--color-primary)]/40 underline-offset-4 transition-colors duration-200 hover:text-[var(--color-primary-800)] hover:decoration-[var(--color-primary)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-primary)]"
+              className="whitespace-nowrap rounded-sm font-semibold text-[var(--color-primary-700)] underline decoration-2 decoration-[var(--color-primary)]/40 underline-offset-4 transition-colors duration-200 hover:text-[var(--color-primary-800)] hover:decoration-[var(--color-primary)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
             >
               Visit trendcandy.io
             </a>
           </p>
         </div>
       </main>
-      <Footer />
+      <ThanksFooter />
     </>
   );
 }

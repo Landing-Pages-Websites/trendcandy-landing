@@ -18,7 +18,7 @@ export function ThanksPrep(): React.JSX.Element {
       className="mt-16 rounded-3xl border border-[var(--color-line)] bg-[var(--color-surface)] p-7 shadow-[0_1px_2px_rgba(17,17,17,0.04),0_18px_40px_-24px_rgba(132,50,8,0.25)] sm:mt-20 sm:p-10"
     >
       <h2 id="prepare-title" className="text-2xl font-bold text-[var(--color-ink)] sm:text-3xl">
-        Make the 30&nbsp;minutes&nbsp;count
+        Make the <span className="whitespace-nowrap">30 minutes count</span>
       </h2>
       <p className="mt-3 max-w-[60ch] text-base leading-[1.65] text-[var(--color-ink-muted)]">
         {FOUNDER_FIRST_NAME} starts with discovery and survey strategy, so it helps to bring:
