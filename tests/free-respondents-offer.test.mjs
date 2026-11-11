@@ -66,3 +66,19 @@ test("booking offer: exact wording, last two words bound so neither strands alon
   );
   assert.equal(book.split("whitespace-nowrap").length - 1, 1, "exactly one bound group");
 });
+
+test("hero 8x stat: root only binds \"data-backed\" so it never splits at the hyphen", () => {
+  const hero = read("src/components/sections/HeroSection.tsx");
+  const content = read("src/lib/content.ts");
+  assert.ok(
+    content.includes('{ value: "8x", label: "more engagement on data-backed content vs opinion posts" }'),
+    "sourced stat copy is unchanged",
+  );
+  // Opt-in only: /google (showOffer=false) keeps rendering the plain stat.label.
+  assert.ok(hero.includes('const BOUND_PHRASE = "data-backed";'));
+  assert.ok(hero.includes("showOffer && stat.label.includes(BOUND_PHRASE) ?"));
+  assert.ok(hero.includes('<span className="whitespace-nowrap">{BOUND_PHRASE}</span>'));
+  assert.match(hero, /:\s*\(\s*stat\.label\s*\)\}/, "falls back to the plain label");
+  const stats = hero.slice(hero.indexOf("{/* Stats row */}"));
+  assert.equal(stats.split("whitespace-nowrap").length - 1, 1, "only this phrase is bound in the stats");
+});
