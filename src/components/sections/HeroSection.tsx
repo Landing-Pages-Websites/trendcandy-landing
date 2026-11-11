@@ -6,6 +6,7 @@ import { BRAND, HERO_STATS } from "@/lib/content";
 
 const VSL_SRC = "/videos/trendcandy-vsl-july-2026.mp4";
 const VSL_POSTER = "/images/trendcandy-vsl-poster.jpg";
+const OFFER_LABEL = "Book a call, get 50 free survey respondents";
 
 /**
  * Hero: TrendCandy.
@@ -14,7 +15,14 @@ const VSL_POSTER = "/images/trendcandy-vsl-poster.jpg";
  *   - Top stats strip
  *   - Dual CTA: primary "Book a Dream Headlines Session" + secondary "See client wins"
  */
-export function HeroSection({ showVsl = false }: { showVsl?: boolean }): React.JSX.Element {
+export function HeroSection({
+  showVsl = false,
+  showOffer = false,
+}: {
+  showVsl?: boolean;
+  /** Root page only: the free-respondents offer line under the CTA helper. */
+  showOffer?: boolean;
+}): React.JSX.Element {
   return (
     <section
       id="hero"
@@ -82,6 +90,13 @@ export function HeroSection({ showVsl = false }: { showVsl?: boolean }): React.J
           <p className="text-xs text-[var(--color-ink-muted)] pt-1">
             {BRAND.ctaSubLabel}
           </p>
+
+          {/* -mt-6 cancels most of the helper's space-y-7 bottom margin, leaving a 4px gap. */}
+          {showOffer && (
+            <p className="-mt-6 text-xs font-semibold text-[var(--color-primary)]">
+              {OFFER_LABEL}
+            </p>
+          )}
         </Reveal>
 
         {/* Stats row */}

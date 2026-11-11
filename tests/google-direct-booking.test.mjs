@@ -93,8 +93,8 @@ test("/google keeps its hero without the VSL", () => {
 
 test("root keeps the Meta direct-booking section and its VSL", () => {
   const page = read("src/app/page.tsx");
-  assert.match(page, /<BookSection booking="calendly" \/>/);
-  assert.match(page, /<HeroSection showVsl \/>/);
+  assert.match(page, /<BookSection booking="calendly"(?: showOffer)? \/>/);
+  assert.match(page, /<HeroSection showVsl(?: showOffer)? \/>/);
 });
 
 test("BookSection defaults stay form-first and Meta", () => {

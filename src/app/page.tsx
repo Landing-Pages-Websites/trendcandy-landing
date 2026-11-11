@@ -33,7 +33,7 @@ export default function Page() {
     <>
       <Header />
       <main className="flex-1">
-        <HeroSection showVsl />
+        <HeroSection showVsl showOffer />
         <TrustBarSection />
         <ProblemSection />
         <HowItWorksSection />
@@ -42,7 +42,7 @@ export default function Page() {
         <AboutSection />
         <GuaranteeSection />
         <FAQSection />
-        <BookSection booking="calendly" />
+        <BookSection booking="calendly" showOffer />
       </main>
       <Footer />
       <FloatingCTA />
