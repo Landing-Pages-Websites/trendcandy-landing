@@ -13,6 +13,8 @@ type BookSectionProps = {
   booking?: "form" | "calendly";
   /** Calendly booking page for "calendly": Meta (default, root) or Google (/google). */
   destination?: CalendlyDestination;
+  /** Root page only: the free-respondents offer line under the session helper. */
+  showOffer?: boolean;
 };
 
 const FORM_INTRO =
@@ -21,6 +23,13 @@ const DIRECT_INTRO =
   "Pick a time below for your 30-minute Dream Headlines session with Justin.";
 const INTRO_REMAINDER =
   "We'll come to the call with 2-3 survey concepts tailored to your category, plus the headlines each one is built to produce. No brand ever became a thought leader by pointing to someone else's thought leadership.";
+// The last two words stay together so "respondents" never wraps onto its own line.
+const OFFER_LABEL = (
+  <>
+    Book a call, get 50 free{" "}
+    <span className="whitespace-nowrap">survey respondents</span>
+  </>
+);
 
 /**
  * Booking section: the page's primary CTA target. All page CTAs point to
@@ -29,6 +38,7 @@ const INTRO_REMAINDER =
 export function BookSection({
   booking = "form",
   destination = "meta",
+  showOffer = false,
 }: BookSectionProps): React.JSX.Element {
   const isDirect = booking === "calendly";
   return (
@@ -47,6 +57,11 @@ export function BookSection({
           <p className="text-sm text-[var(--color-ink-muted)] mt-3">
             30 minutes · No commitment · Free survey concepts
           </p>
+          {showOffer && (
+            <p className="text-sm font-semibold text-[var(--color-primary)] mt-1">
+              {OFFER_LABEL}
+            </p>
+          )}
         </Reveal>
 
         <Reveal delay={120}>
