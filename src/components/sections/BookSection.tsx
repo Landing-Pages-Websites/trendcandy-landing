@@ -23,7 +23,13 @@ const DIRECT_INTRO =
   "Pick a time below for your 30-minute Dream Headlines session with Justin.";
 const INTRO_REMAINDER =
   "We'll come to the call with 2-3 survey concepts tailored to your category, plus the headlines each one is built to produce. No brand ever became a thought leader by pointing to someone else's thought leadership.";
-const OFFER_LABEL = "Book a call, get 50 free survey respondents";
+// The last two words stay together so "respondents" never wraps onto its own line.
+const OFFER_LABEL = (
+  <>
+    Book a call, get 50 free{" "}
+    <span className="whitespace-nowrap">survey respondents</span>
+  </>
+);
 
 /**
  * Booking section: the page's primary CTA target. All page CTAs point to

@@ -15,12 +15,11 @@ const OFFER_TONE = "font-semibold text-[var(--color-primary)]";
 
 const read = (path) => readFileSync(join(ROOT, path), "utf8");
 
-/** The JSX line holding the offer text, guarded by the showOffer flag. */
+/** The JSX line holding the offer constant, guarded by the showOffer flag. */
 function offerParagraph(source) {
   const match = source.match(/\{showOffer && \(\s*<p className="([^"]+)">\s*\{(\w+)\}\s*<\/p>\s*\)\}/);
   assert.ok(match, "offer paragraph is rendered only behind showOffer");
-  assert.ok(source.includes(`const ${match[2]} = "${OFFER}";`), "offer text is exact");
-  return { classes: match[1], index: match.index };
+  return { classes: match[1], name: match[2], index: match.index };
 }
 
 test("root page opts both sections into the offer", () => {
@@ -40,7 +39,8 @@ test("/google and /thanks never show the offer", () => {
 test("hero offer: default off, xs semibold orange, directly below the helper", () => {
   const hero = read("src/components/sections/HeroSection.tsx");
   assert.match(hero, /showOffer = false/);
-  const { classes, index } = offerParagraph(hero);
+  const { classes, name, index } = offerParagraph(hero);
+  assert.ok(hero.includes(`const ${name} = "${OFFER}";`), "offer text is exact");
   assert.ok(classes.includes("text-xs") && classes.includes(OFFER_TONE));
   const helper = hero.indexOf("{BRAND.ctaSubLabel}");
   assert.ok(helper > 0 && helper < index, "offer follows the helper line");
@@ -55,4 +55,14 @@ test("booking offer: default off, sm semibold orange, directly below the helper"
   assert.ok(classes.includes("text-sm") && classes.includes(OFFER_TONE));
   const helper = book.indexOf(HELPER);
   assert.ok(helper < index && !book.slice(helper, index).includes("<p"), "nothing between");
+});
+
+test("booking offer: exact wording, last two words bound so neither strands alone", () => {
+  const book = read("src/components/sections/BookSection.tsx");
+  // Ordinary spaces only: renders as OFFER, with "survey respondents" kept on one line.
+  assert.match(
+    book,
+    /const OFFER_LABEL = \(\s*<>\s*Book a call, get 50 free\{" "\}\s*<span className="whitespace-nowrap">survey respondents<\/span>\s*<\/>\s*\);/,
+  );
+  assert.equal(book.split("whitespace-nowrap").length - 1, 1, "exactly one bound group");
 });
