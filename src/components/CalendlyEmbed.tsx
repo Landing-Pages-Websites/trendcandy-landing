@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Script from "next/script";
-import { BRAND, CALENDLY_URL_GOOGLE } from "@/lib/content";
 import { resolveGoogleCalendlyUrl } from "@/lib/googleCalendly";
 
 /**
@@ -10,10 +9,13 @@ import { resolveGoogleCalendlyUrl } from "@/lib/googleCalendly";
  * Booking happens entirely inside Calendly: no lead form, no
  * form_submit / form_submission event.
  *
- * `destination` picks the booking page: "meta" (default, root page) embeds
- * the Meta page verbatim; "google" (/google only) embeds the Google page with
- * the visit's allow-listed ad attribution (utm_*, gclid/gbraid/wbraid)
- * forwarded, resolved in the browser so current attribution wins.
+ * `destination` picks the channel's Calendly Routing Form (business email +
+ * company name gate) that routes to its existing event: "meta" (default, root
+ * page) → trendcandy/trendcandy-call-meta, used verbatim; "google" (/google
+ * only) → trendcandy/trendcandy-google, with the visit's allow-listed ad
+ * attribution (utm_*, gclid/gbraid/wbraid) forwarded, resolved in the browser
+ * so current attribution wins. The new-tab fallback link points at the same
+ * routing form, so a slow or failed widget cannot bypass the gate.
  *
  * Calendly's postMessage lifecycle events are relayed into GTM's dataLayer
  * (and a confirmed booking into MegaTag) so the analytics stack keeps an
@@ -48,11 +50,16 @@ const THANKS_PATH = "/thanks";
 const CONFIRMED_EVENT_TIMEOUT_MS = 2000;
 const REDIRECT_FALLBACK_MS = 2000;
 
-// Per-destination booking page and how its link is resolved in the browser:
+// Native Calendly Routing Forms (business email + company name gate) that
+// route to the existing events trendcandy-call-meta / trendcandy-google.
+const ROUTING_FORM_URL_META = "https://calendly.com/d/dwqf-y9m-tcg";
+const ROUTING_FORM_URL_GOOGLE = "https://calendly.com/d/dt8q-7c7-9vm";
+
+// Per-destination routing form and how its link is resolved in the browser:
 // Meta is used verbatim; Google forwards the visit's allow-listed attribution.
 const DESTINATIONS = {
-  meta: { baseUrl: BRAND.calendlyUrl, resolve: (url: string): string => url },
-  google: { baseUrl: CALENDLY_URL_GOOGLE, resolve: resolveGoogleCalendlyUrl },
+  meta: { baseUrl: ROUTING_FORM_URL_META, resolve: (url: string): string => url },
+  google: { baseUrl: ROUTING_FORM_URL_GOOGLE, resolve: resolveGoogleCalendlyUrl },
 } as const;
 
 export type CalendlyDestination = keyof typeof DESTINATIONS;

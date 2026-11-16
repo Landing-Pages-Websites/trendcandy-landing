@@ -13,8 +13,11 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const GOOGLE_BASE = "https://calendly.com/trendcandy/trendcandy-google";
-const META_BASE = "https://calendly.com/trendcandy/trendcandy-call-meta";
+// Native Calendly Routing Forms; each gates and then routes to its event.
+const GOOGLE_ROUTING = "https://calendly.com/d/dt8q-7c7-9vm";
+const META_ROUTING = "https://calendly.com/d/dwqf-y9m-tcg";
+// Direct event-type paths the routing forms gate; the site must never link them.
+const DIRECT_EVENT_PATH = "calendly.com/trendcandy/";
 const EMBED_OPTIONS = "hide_event_type_details=0&hide_gdpr_banner=1";
 const CALENDLY_ORIGIN = "https://calendly.com";
 
@@ -27,7 +30,6 @@ async function loadCalendlyEmbed() {
   writeFileSync(scriptStub, "export default function Script() { return null; }\n");
   const specifiers = {
     "next/script": pathToFileURL(scriptStub).href,
-    "@/lib/content": pathToFileURL(join(ROOT, "src/lib/content.ts")).href,
     "@/lib/googleCalendly": pathToFileURL(join(ROOT, "src/lib/googleCalendly.ts")).href,
     react: import.meta.resolve("react"),
     "react/jsx-runtime": import.meta.resolve("react/jsx-runtime"),
@@ -109,13 +111,13 @@ test("Google iframe URL forwards current attribution only, with embed options", 
   const url = withBrowser({ search: GOOGLE_VISIT }, () => embed.resolveEmbedUrl("google"));
   assert.equal(
     url,
-    `${GOOGLE_BASE}?utm_source=google&utm_campaign=Q4&gclid=G1&gbraid=B1&wbraid=W1&${EMBED_OPTIONS}`,
+    `${GOOGLE_ROUTING}?utm_source=google&utm_campaign=Q4&gclid=G1&gbraid=B1&wbraid=W1&${EMBED_OPTIONS}`,
   );
 });
 
 test("Google fallback URL forwards the same attribution without embed options", () => {
   const url = withBrowser({ search: GOOGLE_VISIT }, () => embed.resolveBookingUrl("google"));
-  assert.equal(url, `${GOOGLE_BASE}?utm_source=google&utm_campaign=Q4&gclid=G1&gbraid=B1&wbraid=W1`);
+  assert.equal(url, `${GOOGLE_ROUTING}?utm_source=google&utm_campaign=Q4&gclid=G1&gbraid=B1&wbraid=W1`);
 });
 
 test("current URL attribution wins over stored attribution", () => {
@@ -126,7 +128,7 @@ test("current URL attribution wins over stored attribution", () => {
   };
   assert.equal(
     withBrowser(visit, () => embed.resolveEmbedUrl("google")),
-    `${GOOGLE_BASE}?gclid=CURRENT&${EMBED_OPTIONS}`,
+    `${GOOGLE_ROUTING}?gclid=CURRENT&${EMBED_OPTIONS}`,
   );
 });
 
@@ -135,44 +137,64 @@ test("falls back to session landing_params, then local _mega_attr", () => {
   const local = { _mega_attr: JSON.stringify({ wbraid: "LOCAL" }) };
   assert.equal(
     withBrowser({ session, local }, () => embed.resolveBookingUrl("google")),
-    `${GOOGLE_BASE}?gbraid=SESSION`,
+    `${GOOGLE_ROUTING}?gbraid=SESSION`,
   );
   assert.equal(
     withBrowser({ local }, () => embed.resolveBookingUrl("google")),
-    `${GOOGLE_BASE}?wbraid=LOCAL`,
+    `${GOOGLE_ROUTING}?wbraid=LOCAL`,
   );
 });
 
-test("Google with no attribution anywhere uses the bare Google page", () => {
-  assert.equal(withBrowser({}, () => embed.resolveEmbedUrl("google")), `${GOOGLE_BASE}?${EMBED_OPTIONS}`);
-  assert.equal(withBrowser({}, () => embed.resolveBookingUrl("google")), GOOGLE_BASE);
+test("Google with no attribution anywhere uses the bare Google routing form", () => {
+  assert.equal(withBrowser({}, () => embed.resolveEmbedUrl("google")), `${GOOGLE_ROUTING}?${EMBED_OPTIONS}`);
+  assert.equal(withBrowser({}, () => embed.resolveBookingUrl("google")), GOOGLE_ROUTING);
 });
 
-test("Meta destination is unchanged and ignores Google params", () => {
+test("Meta uses its routing form verbatim and ignores Google params", () => {
   const visit = { search: GOOGLE_VISIT, session: { landing_params: "?gclid=S" } };
-  assert.equal(withBrowser(visit, () => embed.resolveEmbedUrl("meta")), `${META_BASE}?${EMBED_OPTIONS}`);
-  assert.equal(withBrowser(visit, () => embed.resolveBookingUrl("meta")), META_BASE);
+  assert.equal(withBrowser(visit, () => embed.resolveEmbedUrl("meta")), `${META_ROUTING}?${EMBED_OPTIONS}`);
+  assert.equal(withBrowser(visit, () => embed.resolveBookingUrl("meta")), META_ROUTING);
 });
 
 // --- Server markup -----------------------------------------------------------
 
 const renderEmbed = (props) => renderToStaticMarkup(createElement(embed.CalendlyEmbed, props));
 
-test("Google embed renders a labelled region with a Google fallback link", () => {
+test("Google embed renders a labelled region with a Google routing-form fallback link", () => {
   const html = renderEmbed({ destination: "google" });
   assert.match(html, /role="region"/);
   assert.match(html, /aria-label="Choose a time for your Dream Headlines session"/);
-  assert.match(html, new RegExp(`href="${GOOGLE_BASE}"`));
-  assert.doesNotMatch(html, /trendcandy-call-meta/);
+  assert.match(html, new RegExp(`href="${GOOGLE_ROUTING}"`));
+  assert.ok(!html.includes(META_ROUTING));
   assert.doesNotMatch(html, /<form|<input|<button/);
 });
 
 test("default embed markup is identical to the explicit Meta destination", () => {
   const html = renderEmbed({});
   assert.equal(html, renderEmbed({ destination: "meta" }));
-  assert.match(html, new RegExp(`href="${META_BASE}"`));
-  assert.doesNotMatch(html, /trendcandy-google/);
+  assert.match(html, new RegExp(`href="${META_ROUTING}"`));
+  assert.ok(!html.includes(GOOGLE_ROUTING));
 });
+
+// --- No direct-event bypass -------------------------------------------------
+
+const ROUTING = { meta: META_ROUTING, google: GOOGLE_ROUTING };
+const anchorHrefs = (html) => [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]);
+
+for (const destination of ["meta", "google"]) {
+  test(`${destination} embed, fallback and markup never link a direct event page`, () => {
+    const urls = withBrowser({ search: GOOGLE_VISIT }, () => [
+      embed.resolveEmbedUrl(destination),
+      embed.resolveBookingUrl(destination),
+    ]);
+    const hrefs = anchorHrefs(renderEmbed({ destination }));
+    assert.ok(hrefs.length > 0, "fallback link is rendered");
+    for (const url of [...urls, ...hrefs]) {
+      assert.ok(!url.includes(DIRECT_EVENT_PATH), `${url} bypasses the routing form`);
+      assert.ok(url.startsWith(ROUTING[destination]), `${url} is not the ${destination} routing form`);
+    }
+  });
+}
 
 // --- Lifecycle relay (fixtures only) -----------------------------------------
 
@@ -236,7 +258,7 @@ test("initializes the Google widget once across onLoad + onReady", () => {
     assert.equal(embed.initCalendlyWidget(host, "google"), true);
   });
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].url, `${GOOGLE_BASE}?gclid=G1&${EMBED_OPTIONS}`);
+  assert.equal(calls[0].url, `${GOOGLE_ROUTING}?gclid=G1&${EMBED_OPTIONS}`);
   assert.equal(calls[0].parentElement, host);
 });
 
