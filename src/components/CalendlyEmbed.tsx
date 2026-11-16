@@ -49,6 +49,11 @@ const THANKS_PATH = "/thanks";
 // or blocked. Keep the fallback >= the timeout so GTM gets its full window.
 const CONFIRMED_EVENT_TIMEOUT_MS = 2000;
 const REDIRECT_FALLBACK_MS = 2000;
+// The site's existing policy, linked above the widget so it is visible before
+// a visitor shares details. Quiet legal-link styling, not a CTA.
+const PRIVACY_POLICY_PATH = "/privacy-policy";
+const PRIVACY_LINK_CLASS =
+  "inline-flex min-h-11 items-center rounded-sm px-1 text-sm font-medium text-[var(--color-ink-muted)] underline decoration-[var(--color-primary-400)] underline-offset-4 transition-colors duration-200 hover:text-[var(--color-primary-700)] hover:decoration-[var(--color-primary-700)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]";
 
 // Native Calendly Routing Forms (business email + company name gate) that
 // route to the existing events trendcandy-call-meta / trendcandy-google.
@@ -224,28 +229,41 @@ export function CalendlyEmbed({
         onReady={initWidget}
       />
       <link rel="stylesheet" href={CALENDLY_STYLE_HREF} />
-      <div
-        ref={hostRef}
-        // Fixed heights reserve space before load (no layout shift): Calendly's
-        // stacked mobile layout needs ~1000px, its desktop view ~720px.
-        className="calendly-inline-widget w-full h-[1000px] md:h-[720px] rounded-2xl overflow-hidden"
-        data-auto-load="false"
-        aria-label="Choose a time for your Dream Headlines session"
-        role="region"
-      />
-      {!ready && (
-        <p className="absolute inset-x-0 top-0 px-4 py-6 text-center text-sm text-[var(--color-ink-muted)]">
-          Loading Justin&apos;s calendar…{" "}
-          <a
-            href={fallbackUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[var(--color-primary)] hover:underline focus-visible:underline font-semibold"
-          >
-            Open it in a new tab
-          </a>
-        </p>
-      )}
+      <p className="flex justify-end px-3 pt-2 sm:px-1 sm:pt-0">
+        <a
+          href={PRIVACY_POLICY_PATH}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={PRIVACY_LINK_CLASS}
+        >
+          Privacy Policy
+        </a>
+      </p>
+      {/* Positions the loading note over the widget, clear of the privacy link. */}
+      <div className="relative">
+        <div
+          ref={hostRef}
+          // Fixed heights reserve space before load (no layout shift): Calendly's
+          // stacked mobile layout needs ~1000px, its desktop view ~720px.
+          className="calendly-inline-widget w-full h-[1000px] md:h-[720px] rounded-2xl overflow-hidden"
+          data-auto-load="false"
+          aria-label="Choose a time for your Dream Headlines session"
+          role="region"
+        />
+        {!ready && (
+          <p className="absolute inset-x-0 top-0 px-4 py-6 text-center text-sm text-[var(--color-ink-muted)]">
+            Loading Justin&apos;s calendar…{" "}
+            <a
+              href={fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--color-primary)] hover:underline focus-visible:underline font-semibold"
+            >
+              Open it in a new tab
+            </a>
+          </p>
+        )}
+      </div>
     </div>
   );
 }
