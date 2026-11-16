@@ -180,6 +180,8 @@ test("default embed markup is identical to the explicit Meta destination", () =>
 
 const ROUTING = { meta: META_ROUTING, google: GOOGLE_ROUTING };
 const anchorHrefs = (html) => [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]);
+// The one same-site legal link beside the widget; every other link must be the gate.
+const PRIVACY_POLICY_PATH = "/privacy-policy";
 
 for (const destination of ["meta", "google"]) {
   test(`${destination} embed, fallback and markup never link a direct event page`, () => {
@@ -188,8 +190,10 @@ for (const destination of ["meta", "google"]) {
       embed.resolveBookingUrl(destination),
     ]);
     const hrefs = anchorHrefs(renderEmbed({ destination }));
-    assert.ok(hrefs.length > 0, "fallback link is rendered");
-    for (const url of [...urls, ...hrefs]) {
+    const bookingHrefs = hrefs.filter((href) => href !== PRIVACY_POLICY_PATH);
+    assert.equal(hrefs.length - bookingHrefs.length, 1, "exactly one privacy policy link");
+    assert.ok(bookingHrefs.length > 0, "fallback link is rendered");
+    for (const url of [...urls, ...bookingHrefs]) {
       assert.ok(!url.includes(DIRECT_EVENT_PATH), `${url} bypasses the routing form`);
       assert.ok(url.startsWith(ROUTING[destination]), `${url} is not the ${destination} routing form`);
     }

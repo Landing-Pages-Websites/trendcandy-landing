@@ -72,3 +72,20 @@ The controller owns verification of:
 - ads and pixel transport
 
 Repo tests use network-inert fixtures only (`tests/google-direct-booking.test.mjs`).
+
+## Privacy Policy links (QA follow-up, 2026-11-16)
+
+QA asked for a Privacy Policy link beside the Calendly embeds and in each page
+footer. Both links reuse the site's existing policy at `/privacy-policy`
+(book.trendcandy.io). No policy, Terms, or SMS language was written or changed.
+
+- `CalendlyEmbed`: one underlined "Privacy Policy" link sits above the widget,
+  inside the booking card, so it is visible before a visitor enters details. A
+  plain `relative` wrapper keeps the existing loading note over the widget and
+  clear of the link. Widget heights, URLs, handlers and tracking are unchanged.
+- `Footer`: one "Privacy Policy" link under the existing copyright line. The
+  footer's existing words, logo and main-site link are unchanged.
+- Both links open in a new tab with `rel="noopener noreferrer"`, use 14px text
+  with a 44px touch target, and have hover and focus-visible states.
+- No form controls were added. `tests/privacy-links.test.mjs` covers the links
+  and the preserved widget/footer markup.

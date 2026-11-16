@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { BRAND } from "@/lib/content";
 
+const PRIVACY_POLICY_PATH = "/privacy-policy";
+// Mobile bottom margin keeps the link clear of the fixed floating CTA.
+const PRIVACY_LINK_CLASS =
+  "mb-10 sm:mb-0 inline-flex min-h-11 items-center rounded-sm text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition-colors duration-200 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-primary)]";
+
 /**
  * Legal-only footer per landing-page-architect Rule #4.
  * Logo NOT inverted (prior QA R1 failure on inherited build).
@@ -28,6 +33,14 @@ export function Footer() {
             {" · "}
             <a href={BRAND.parentSite} className="hover:text-white underline">{BRAND.parentSite.replace("https://", "")}</a>
           </p>
+          <a
+            href={PRIVACY_POLICY_PATH}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={PRIVACY_LINK_CLASS}
+          >
+            Privacy Policy
+          </a>
         </div>
       </div>
     </footer>
