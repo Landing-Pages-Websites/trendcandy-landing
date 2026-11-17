@@ -1,5 +1,6 @@
 "use client";
 
+import { preload } from "react-dom";
 import { Reveal } from "@/components/Reveal";
 import { TypewriterCycle } from "@/components/TypewriterCycle";
 import { BRAND, HERO_STATS } from "@/lib/content";
@@ -25,6 +26,10 @@ export function HeroSection({
   /** Root page only: the free-respondents offer line under the CTA helper. */
   showOffer?: boolean;
 }): React.JSX.Element {
+  // The poster is the Meta hero's largest paint: discover it early, at high
+  // priority, from the <head>. The video itself still loads only on play.
+  if (showVsl) preload(VSL_POSTER, { as: "image", fetchPriority: "high" });
+
   return (
     <section
       id="hero"
