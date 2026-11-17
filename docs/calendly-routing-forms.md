@@ -89,3 +89,47 @@ footer. Both links reuse the site's existing policy at `/privacy-policy`
   with a 44px touch target, and have hover and focus-visible states.
 - No form controls were added. `tests/privacy-links.test.mjs` covers the links
   and the preserved widget/footer markup.
+
+## Demand-loaded widget and VSL poster hint (performance follow-up, 2026-11-17)
+
+QA attempt 2 (2026-11-16) passed the privacy repair but failed the mandatory
+Pass 5 mobile floor, measured as the median of two VALID Google-hosted runs per
+route. Meta scored LCP 27.42 s / TBT 1047.75 ms. Google scored LCP 4.73 s /
+TBT 1307.25 ms.
+
+**Diagnosis.** In both VALID runs the longest main-thread tasks were Calendly's
+booking bundle (735–789 ms), Calendly's `pxwebj3qd.js`, and the Stripe frames
+Calendly loads. Required tracking was not the cause. All of it started on the
+first hero view, because `next/script` with `afterInteractive` emits
+`<link rel="preload" as="script">` for `widget.js` into the server HTML. The
+widget stylesheet was also in the initial HTML. The booking card sits about
+12,000 px below the fold on mobile and 7,000 px on desktop. Meta's LCP element
+is the existing VSL poster, reported with `priorityHinted=false`.
+
+**Change.** This is a resource-timing change only:
+
+- `CalendlyEmbed` renders the same `<Script>` (same id, src, strategy, and
+  `onLoad`/`onReady` init) and the same stylesheet only after booking intent.
+  `watchBookingIntent` decides when intent has happened:
+  - the card comes within 1200 px of the viewport;
+  - a pointer or keyboard click lands on an in-page `a[href="#book"]` CTA
+    (passive capture listener; it never prevents navigation);
+  - the page has a `#book` hash, on arrival or later.
+
+  The observer and listeners are removed on activation or unmount. A missing
+  or failing IntersectionObserver activates at once. There is no timer and no
+  user-agent check.
+- Everything else is unchanged: the card, its reserved 1000 px / 720 px host,
+  the loading note, the new-tab fallback, the Privacy Policy link, the message
+  listener, origin/source checks, relays, and the `/thanks` redirect. The
+  widget URL, including Google's allow-listed attribution, is still resolved
+  when the widget initializes.
+- On Meta only, `HeroSection` calls React's `preload()` for the existing poster
+  with `fetchPriority: "high"`. The video keeps `preload="none"`, its source,
+  and native controls, and the MP4 still loads only on play.
+
+GTM, CTM, MegaTag, and Meta Pixel loading is untouched.
+
+**Verification.** `tests/performance-loading.test.mjs` uses network-inert
+fixtures. Local fixture-browser evidence is outside the repo. Public PSI after
+deployment is owned by the controller; this change makes no claim of a PSI pass.

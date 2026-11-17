@@ -191,11 +191,93 @@ export function handleCalendlyMessage(e: MessageEvent, host: HTMLElement | null)
   if (calendlyEvent) relayCalendlyEvent(calendlyEvent);
 }
 
+// Calendly's widget script, stylesheet and iframe are heavy and the booking
+// card sits far below the fold, so they load on booking intent only: the card
+// nearing the viewport, a click (pointer or keyboard) on an in-page #book CTA,
+// or a #book hash, on arrival or later. Page tracking is not affected.
+const BOOK_HASH = "#book";
+const BOOK_LINK_SELECTOR = `a[href="${BOOK_HASH}"]`;
+// Start about a screen and a half before the card scrolls into view.
+const NEAR_VIEWPORT_MARGIN = "1200px 0px";
+
+/** Call `onNear` when `target` nears the viewport; throws without IntersectionObserver. */
+function observeNearViewport(target: Element, onNear: () => void): IntersectionObserver {
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) onNear();
+  }, { rootMargin: NEAR_VIEWPORT_MARGIN });
+  observer.observe(target);
+  return observer;
+}
+
+/**
+ * Call `onIntent` when the hash becomes #book or an in-page #book CTA is
+ * clicked (pointer or keyboard). Passive: the native anchor still navigates.
+ * Returns a function that removes both listeners.
+ */
+function listenForBookLinks(onIntent: () => void): () => void {
+  const onHash = (): void => {
+    if (window.location.hash === BOOK_HASH) onIntent();
+  };
+  const onClick = (e: MouseEvent): void => {
+    if (e.target instanceof Element && e.target.closest(BOOK_LINK_SELECTOR)) onIntent();
+  };
+  window.addEventListener("hashchange", onHash);
+  document.addEventListener("click", onClick, true);
+  return () => {
+    window.removeEventListener("hashchange", onHash);
+    document.removeEventListener("click", onClick, true);
+  };
+}
+
+/**
+ * Call `activate` once, on the first booking-intent signal for `target`.
+ * Returns a cleanup that removes the observer and listeners; after it runs,
+ * nothing activates. Without a working IntersectionObserver it activates
+ * right away, so the booking widget is never stranded.
+ */
+export function watchBookingIntent(target: Element, activate: () => void): () => void {
+  if (window.location.hash === BOOK_HASH) {
+    activate();
+    return () => {};
+  }
+  let done = false;
+  let observer: IntersectionObserver | null = null;
+  let unlisten = (): void => {};
+  const stop = (): void => {
+    done = true;
+    observer?.disconnect();
+    unlisten();
+  };
+  const fire = (): void => {
+    if (done) return;
+    stop();
+    activate();
+  };
+  unlisten = listenForBookLinks(fire);
+  try {
+    observer = observeNearViewport(target, fire);
+  } catch {
+    fire();
+  }
+  return stop;
+}
+
+/** False until booking intent is seen for the element in `ref`. */
+function useBookingIntent(ref: React.RefObject<HTMLElement | null>): boolean {
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    return watchBookingIntent(ref.current, () => setActive(true));
+  }, [ref]);
+  return active;
+}
+
 export function CalendlyEmbed({
   destination = "meta",
 }: CalendlyEmbedProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const active = useBookingIntent(hostRef);
   const fallbackUrl = useSyncExternalStore(
     subscribeNoop,
     () => resolveBookingUrl(destination),
@@ -221,14 +303,18 @@ export function CalendlyEmbed({
 
   return (
     <div className="bg-white/97 backdrop-blur rounded-3xl shadow-2xl shadow-black/15 border border-[var(--color-line)] relative sm:p-3 overflow-hidden">
-      <Script
-        id="calendly-inline"
-        src={CALENDLY_SCRIPT_SRC}
-        strategy="afterInteractive"
-        onLoad={initWidget}
-        onReady={initWidget}
-      />
-      <link rel="stylesheet" href={CALENDLY_STYLE_HREF} />
+      {active && (
+        <>
+          <Script
+            id="calendly-inline"
+            src={CALENDLY_SCRIPT_SRC}
+            strategy="afterInteractive"
+            onLoad={initWidget}
+            onReady={initWidget}
+          />
+          <link rel="stylesheet" href={CALENDLY_STYLE_HREF} />
+        </>
+      )}
       <p className="flex justify-end px-3 pt-2 sm:px-1 sm:pt-0">
         <a
           href={PRIVACY_POLICY_PATH}
