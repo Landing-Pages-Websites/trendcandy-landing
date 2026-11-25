@@ -83,13 +83,13 @@ const GOOGLE_VISIT = "?utm_source=google&utm_campaign=Q4&gclid=G1&gbraid=B1&wbra
 
 test("/google mounts the Google direct-booking section and no native form", () => {
   const page = read("src/app/google/page.tsx");
-  assert.match(page, /<BookSection booking="calendly" destination="google" \/>/);
+  assert.match(page, /<BookSection booking="calendly" destination="google" showOffer \/>/);
   assert.doesNotMatch(page, /FormCard|useMegaLeadForm|form_submi/);
 });
 
 test("/google keeps its hero without the VSL", () => {
   const page = read("src/app/google/page.tsx");
-  assert.match(page, /<HeroSection \/>/);
+  assert.match(page, /<HeroSection showOffer bindStatPhrase=\{false\} \/>/);
   assert.doesNotMatch(page, /showVsl/);
 });
 

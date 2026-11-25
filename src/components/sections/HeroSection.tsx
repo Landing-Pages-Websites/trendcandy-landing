@@ -8,7 +8,7 @@ import { BRAND, HERO_STATS } from "@/lib/content";
 const VSL_SRC = "/videos/trendcandy-vsl-july-2026.mp4";
 const VSL_POSTER = "/images/trendcandy-vsl-poster.jpg";
 const OFFER_LABEL = "Book a call, get 50 free survey respondents";
-/** Root only: keeps the 8x stat's "data-backed" from splitting at its hyphen. */
+/** Keeps the 8x stat's "data-backed" from splitting at its hyphen. */
 const BOUND_PHRASE = "data-backed";
 
 /**
@@ -21,10 +21,13 @@ const BOUND_PHRASE = "data-backed";
 export function HeroSection({
   showVsl = false,
   showOffer = false,
+  bindStatPhrase = showOffer,
 }: {
   showVsl?: boolean;
-  /** Root page only: the free-respondents offer line under the CTA helper. */
+  /** Root and /google: the free-respondents offer line under the CTA helper. */
   showOffer?: boolean;
+  /** Bind BOUND_PHRASE in the stats. Defaults to showOffer (root); /google opts out. */
+  bindStatPhrase?: boolean;
 }): React.JSX.Element {
   // The poster is the Meta hero's largest paint: discover it early, at high
   // priority, from the <head>. The video itself still loads only on play.
@@ -120,7 +123,7 @@ export function HeroSection({
                 {stat.value}
               </div>
               <p className="text-sm text-[var(--color-ink-muted)] mt-1 leading-snug">
-                {showOffer && stat.label.includes(BOUND_PHRASE) ? (
+                {bindStatPhrase && stat.label.includes(BOUND_PHRASE) ? (
                   <>
                     {stat.label.split(BOUND_PHRASE)[0]}
                     <span className="whitespace-nowrap">{BOUND_PHRASE}</span>

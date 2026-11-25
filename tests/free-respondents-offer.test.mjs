@@ -1,7 +1,7 @@
 // Run with: node --test tests/free-respondents-offer.test.mjs  (Node >= 22.18)
-// Root-only "50 free survey respondents" offer line. Source-level checks: the
-// root page opts in, the shared sections default the offer off, and /google
-// and /thanks never render it.
+// "50 free survey respondents" offer line. Source-level checks: the root page
+// and /google opt in (/google since Atlas task 6d042f8b), the shared sections
+// default the offer off, and /thanks never renders it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -28,12 +28,17 @@ test("root page opts both sections into the offer", () => {
   assert.match(page, /<BookSection booking="calendly" showOffer \/>/);
 });
 
-test("/google and /thanks never show the offer", () => {
-  for (const path of ["src/app/google/page.tsx", "src/app/thanks/page.tsx"]) {
-    const source = read(path);
-    assert.ok(!source.includes("showOffer"), `${path} does not opt in`);
-    assert.ok(!source.includes(OFFER), `${path} has no offer copy`);
-  }
+test("/google opts both sections into the offer, keeping its plain stat", () => {
+  const page = read("src/app/google/page.tsx");
+  assert.match(page, /<HeroSection showOffer bindStatPhrase=\{false\} \/>/);
+  assert.match(page, /<BookSection booking="calendly" destination="google" showOffer \/>/);
+  assert.ok(!page.includes(OFFER), "copy stays in the shared sections");
+});
+
+test("/thanks never shows the offer", () => {
+  const source = read("src/app/thanks/page.tsx");
+  assert.ok(!source.includes("showOffer"), "does not opt in");
+  assert.ok(!source.includes(OFFER), "has no offer copy");
 });
 
 test("hero offer: default off, xs semibold orange, directly below the helper", () => {
@@ -74,9 +79,10 @@ test("hero 8x stat: root only binds \"data-backed\" so it never splits at the hy
     content.includes('{ value: "8x", label: "more engagement on data-backed content vs opinion posts" }'),
     "sourced stat copy is unchanged",
   );
-  // Opt-in only: /google (showOffer=false) keeps rendering the plain stat.label.
+  // Follows showOffer by default (root); /google opts out and keeps the plain stat.label.
   assert.ok(hero.includes('const BOUND_PHRASE = "data-backed";'));
-  assert.ok(hero.includes("showOffer && stat.label.includes(BOUND_PHRASE) ?"));
+  assert.match(hero, /bindStatPhrase = showOffer/);
+  assert.ok(hero.includes("bindStatPhrase && stat.label.includes(BOUND_PHRASE) ?"));
   assert.ok(hero.includes('<span className="whitespace-nowrap">{BOUND_PHRASE}</span>'));
   assert.match(hero, /:\s*\(\s*stat\.label\s*\)\}/, "falls back to the plain label");
   const stats = hero.slice(hero.indexOf("{/* Stats row */}"));

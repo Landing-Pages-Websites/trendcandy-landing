@@ -38,7 +38,7 @@ export default function GooglePage() {
     <>
       <Header />
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection showOffer bindStatPhrase={false} />
         <TrustBarSection />
         <ProblemSection />
         <HowItWorksSection />
@@ -47,7 +47,7 @@ export default function GooglePage() {
         <AboutSection />
         <GuaranteeSection />
         <FAQSection />
-        <BookSection booking="calendly" destination="google" />
+        <BookSection booking="calendly" destination="google" showOffer />
       </main>
       <Footer />
       <FloatingCTA hideWhileInViewId="book" />
