@@ -13,7 +13,7 @@ type BookSectionProps = {
   booking?: "form" | "calendly";
   /** Calendly booking page for "calendly": Meta (default, root) or Google (/google). */
   destination?: CalendlyDestination;
-  /** Root page only: the free-respondents offer line under the session helper. */
+  /** Root and /google: the free-respondents offer line under the session helper. */
   showOffer?: boolean;
 };
 
